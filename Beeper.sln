@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{62BF4BF7-74AC-44C2-86DE-32A111F2879E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{6963E3B5-7CD2-48D4-B6DD-F221A90790C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beeper", "src\Beeper\Beeper.csproj", "{A4FC8AE1-FC23-4CBB-9711-11F40D78D08B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo", "src\Demo\Demo.csproj", "{AA935767-537A-4154-B002-88D761E8AF0E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A4FC8AE1-FC23-4CBB-9711-11F40D78D08B} = {62BF4BF7-74AC-44C2-86DE-32A111F2879E}
+		{AA935767-537A-4154-B002-88D761E8AF0E} = {62BF4BF7-74AC-44C2-86DE-32A111F2879E}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A4FC8AE1-FC23-4CBB-9711-11F40D78D08B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4FC8AE1-FC23-4CBB-9711-11F40D78D08B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4FC8AE1-FC23-4CBB-9711-11F40D78D08B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4FC8AE1-FC23-4CBB-9711-11F40D78D08B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA935767-537A-4154-B002-88D761E8AF0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA935767-537A-4154-B002-88D761E8AF0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA935767-537A-4154-B002-88D761E8AF0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA935767-537A-4154-B002-88D761E8AF0E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
