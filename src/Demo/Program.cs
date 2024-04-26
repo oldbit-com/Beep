@@ -18,10 +18,10 @@ rootCommand.AddOption(channelsOption);
 
 rootCommand.SetHandler(async (format, sampleRate, channels) =>
 {
+    Console.WriteLine("Playing demo audio...");
     Console.WriteLine($"Format: {format}  Sample rate: {sampleRate}  Channels: {channels}");
 
-    var demoPlayer = new DemoPlayer();
-    await demoPlayer.Play(format, sampleRate, channels);
+    await DemoPlayer.Play(format, sampleRate, channels);
 
 }, formatOption, sampleRateOption, channelsOption);
 
