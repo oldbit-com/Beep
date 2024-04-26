@@ -3,42 +3,36 @@ using OldBit.Beeper;
 
 namespace Demo;
 
-public static class DemoPlayer
+/// <summary>
+/// Demonstrates how to play a sequence of notes.
+/// </summary>
+public class DemoPlayer(string audioFormatString, int sampleRate, int channelCount)
 {
     private const float NoteC5 = 523.25f;
     private const float NoteE5 = 659.25f;
     private const float NoteG5 = 783.99f;
 
-    public static async Task Play(string audioFormatString, int sampleRate, int channelCount)
+    private readonly AudioFormat _audioFormat = GetAudioFormat(audioFormatString);
+
+    public async Task Play()
     {
-        var audioFormat = GetAudioFormat(audioFormatString);
-
-        var playerC5 = Task.Run(async() =>
-        {
-            await StartPlayer(audioFormat, sampleRate, channelCount, NoteC5);
-        });
+        var playerC5 = Task.Run(async () => { await StartPlayer(NoteC5); });
 
         await Task.Delay(TimeSpan.FromSeconds(1));
-        var playerE5 = Task.Run(async() =>
-        {
-            await StartPlayer(audioFormat, sampleRate, channelCount, NoteE5);
-        });
+        var playerE5 = Task.Run(async () => { await StartPlayer(NoteE5); });
 
         await Task.Delay(TimeSpan.FromSeconds(1));
-        var playeG5 = Task.Run(async() =>
-        {
-            await StartPlayer(audioFormat, sampleRate, channelCount, NoteG5);
-        });
+        var playerG5 = Task.Run(async () => { await StartPlayer(NoteG5); });
 
-        await Task.WhenAll(playerC5, playerE5, playeG5);
+        await Task.WhenAll(playerC5, playerE5, playerG5);
     }
 
-    private static async Task StartPlayer(AudioFormat audioFormat, int sampleRate, int channelCount, float note)
+    private async Task StartPlayer(float note)
     {
-        var sinWaveGenerator = new SinWaveGenerator(audioFormat, sampleRate, channelCount);
+        var sinWaveGenerator = new SinWaveGenerator(_audioFormat, sampleRate, channelCount);
         var audioData = sinWaveGenerator.Generate(note, TimeSpan.FromSeconds(3));
 
-        using var audioPlayer = new AudioPlayer(audioFormat, sampleRate, channelCount);
+        using var audioPlayer = new AudioPlayer(_audioFormat, sampleRate, channelCount);
 
         audioPlayer.Start();
         await audioPlayer.Enqueue(audioData);

@@ -3,6 +3,9 @@ using System.Threading.Channels;
 
 namespace OldBit.Beeper.MacOS;
 
+/// <summary>
+/// Represents an audio player that uses the Audio Queue Services API to play audio data.
+/// </summary>
 internal sealed class AudioQueuePlayer: IAudioPlayer
 {
     private const int FloatSizeInBytes = sizeof(float);
@@ -12,6 +15,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
     private readonly List<IntPtr> _allocatedAudioBuffers;
     private readonly Channel<IntPtr> _availableAudioBuffers;
     private GCHandle _gch;
+    private bool _isStarted;
 
     internal AudioQueuePlayer(int sampleRate, int channelCount, int bufferSize)
     {
@@ -40,20 +44,30 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         unsafe
         {
             var status = AudioToolbox.AudioQueueStart(_audioQueue, null);
+
             if (status != 0)
             {
                 throw new AudioPlayerException($"Failed to start audio queue: {status}", status);
             }
         }
+
+        _isStarted = true;
     }
 
     public void Stop()
     {
         AudioToolbox.AudioQueueStop(_audioQueue, true);
+
+        _isStarted = false;
     }
 
     public async Task Enqueue(float[] data, CancellationToken cancellationToken = default)
     {
+        if (_isStarted == false)
+        {
+            throw new InvalidOperationException("The audio player is not started. Use the Start method to start the player.");
+        }
+
         var buffer = await _availableAudioBuffers.Reader.ReadAsync(cancellationToken);
 
         unsafe
@@ -64,6 +78,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
             Marshal.Copy(data, 0, audioQueueBuffer->AudioData, data.Length);
 
             var status = AudioToolbox.AudioQueueEnqueueBuffer(_audioQueue, audioQueueBuffer, 0, null);
+
             if (status != 0)
             {
                 throw new AudioPlayerException($"Failed to enqueue buffer: {status}", status);
@@ -122,6 +137,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
     private static void AudioQueueOutputCallback(IntPtr userData, IntPtr audioQueue, IntPtr buffer)
     {
         var gch = GCHandle.FromIntPtr(userData);
+
         if (gch.Target is AudioQueuePlayer player)
         {
             player._availableAudioBuffers.Writer.TryWrite(buffer);
@@ -133,6 +149,11 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         if (_audioQueue == IntPtr.Zero)
         {
             return;
+        }
+
+        if (_isStarted)
+        {
+            Stop();
         }
 
         foreach (var buffer in _allocatedAudioBuffers)
