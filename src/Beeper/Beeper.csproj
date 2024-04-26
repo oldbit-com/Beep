@@ -7,6 +7,11 @@
         <AssemblyName>OldBit.Beeper</AssemblyName>
         <RootNamespace>OldBit.Beeper</RootNamespace>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Version>0.0.1</Version>
+        <Title>OldBit.Beeper</Title>
+        <Authors>Wojciech Sobieszek</Authors>
+        <RepositoryUrl>https://github.com/oldbit-com/Beeper</RepositoryUrl>
+        <Description>Simple cross platform dotnet library for playing audio</Description>
     </PropertyGroup>
 
 </Project>
