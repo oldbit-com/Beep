@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading.Channels;
 
 namespace OldBit.Beeper.MacOS;
@@ -6,6 +7,7 @@ namespace OldBit.Beeper.MacOS;
 /// <summary>
 /// Represents an audio player that uses the Audio Queue Services API to play audio data.
 /// </summary>
+[SupportedOSPlatform("macos")]
 internal sealed class AudioQueuePlayer: IAudioPlayer
 {
     private const int FloatSizeInBytes = sizeof(float);

@@ -1,7 +1,10 @@
 using OldBit.Beeper.Windows.CoreAudioInterop;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace OldBit.Beeper.Windows;
 
+[SupportedOSPlatform("windows")]
 public partial class CoreAudioPlayer : IAudioPlayer
 {
    
@@ -9,6 +12,9 @@ public partial class CoreAudioPlayer : IAudioPlayer
     {
         var deviceEnumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
         var device = deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.Render, ERole.Multimedia);
+
+        _ = Marshal.ReleaseComObject(deviceEnumerator);
+        _ = Marshal.ReleaseComObject(device);
     }
 
     public void Start()

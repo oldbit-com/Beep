@@ -8,7 +8,7 @@ namespace OldBit.Beeper.Windows.CoreAudioInterop;
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 internal interface IMMDeviceEnumerator
 {
-    int EnumAudioEndpoints(EDataFlow dataFlow, DeviceState stateMask, out IMMDeviceCollection devices);
+    IMMDeviceCollection EnumAudioEndpoints(EDataFlow dataFlow, DeviceState stateMask);
 
     IMMDevice GetDefaultAudioEndpoint(EDataFlow dataFlow, ERole role);
 }

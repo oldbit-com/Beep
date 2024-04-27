@@ -13,12 +13,12 @@ public class AudioPlayer : IDisposable
     {
         _audioFormat = audioFormat;
 
-        if (OperatingPlatform.IsMacOS)
+        if (OperatingSystem.IsMacOS())
         {
             _bufferSize = 12288;
             _audioPlayer = new AudioQueuePlayer(sampleRate, channelCount, _bufferSize);
         }
-        else if (OperatingPlatform.IsWindows)
+        else if (OperatingSystem.IsWindows())
         {
             // TODO: Implement Windows audio player
             throw new PlatformNotSupportedException("The current platform is not supported.");
