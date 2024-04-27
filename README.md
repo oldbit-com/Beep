@@ -10,6 +10,7 @@ The library does not have any dependencies, it uses native OS libraries to play 
 
 However this is more an example and exercise how to create cross platform libraries in dotnet with native OS dependencies.
 
+
 Supported platforms:
 - MacOS
 - Windows
@@ -20,3 +21,13 @@ It uses AudioToolbox.framework to play audio.
 ### Windows
 
 ## Usage
+
+```csharp
+using OldBit.Beeper;
+
+using var audioPlayer = new AudioPlayer(AudioFormat.Float32BitLittleEndian, 44100, 2);
+audioPlayer.Start();
+await audioPlayer.EnqueueAsync(new byyte[] { 0.5f, 0.5f, 0.5f, 0.5f });
+audioPlayer.Stop();
+```
+

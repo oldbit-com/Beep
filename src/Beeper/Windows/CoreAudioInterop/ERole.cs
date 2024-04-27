@@ -1,11 +1,10 @@
-﻿namespace OldBit.Beeper.Windows.CoreAudioInterop
+﻿namespace OldBit.Beeper.Windows.CoreAudioInterop;
+
+internal enum ERole
 {
-    internal enum ERole
-    {
-        Console,
+    Console,
 
-        Multimedia,
+    Multimedia,
 
-        Communications
-    }
+    Communications
 }

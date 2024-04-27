@@ -1,11 +1,10 @@
-﻿namespace OldBit.Beeper.Windows.CoreAudioInterop
+﻿namespace OldBit.Beeper.Windows.CoreAudioInterop;
+
+internal enum EDataFlow
 {
-    internal enum EDataFlow
-    {
-        Render,
+    Render,
 
-        Capture,
+    Capture,
 
-        All
-    }
+    All
 }

@@ -1,16 +1,15 @@
-﻿namespace OldBit.Beeper.Windows.CoreAudioInterop
+﻿namespace OldBit.Beeper.Windows.CoreAudioInterop;
+
+[Flags]
+internal enum DeviceState
 {
-    [Flags]
-    internal enum DeviceState : int
-    {
-        Active = 0x00000001,
+    Active = 0x00000001,
 
-        Disabled = 0x00000002,
+    Disabled = 0x00000002,
 
-        NotPresent = 0x00000004,
+    NotPresent = 0x00000004,
 
-        Unplugged = 0x00000008,
+    Unplugged = 0x00000008,
 
-        All = 0x0000000F
-    }
+    All = 0x0000000F
 }

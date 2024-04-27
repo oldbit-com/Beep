@@ -35,7 +35,7 @@ public class DemoPlayer(string audioFormatString, int sampleRate, int channelCou
         using var audioPlayer = new AudioPlayer(_audioFormat, sampleRate, channelCount);
 
         audioPlayer.Start();
-        await audioPlayer.Enqueue(audioData);
+        await audioPlayer.Play(audioData);
         audioPlayer.Stop();
     }
 
