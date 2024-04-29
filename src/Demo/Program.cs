@@ -1,10 +1,5 @@
 ﻿using System.CommandLine;
 using Demo;
-using OldBit.Beeper.Windows;
-
-
-var xxx = new CoreAudioPlayer();
-xxx.Start();
 
 var formatOption = new Option<string>("--format", () => "f32le", "The format of the output file")
     .FromAmong("f32le", "s16le", "u8");
