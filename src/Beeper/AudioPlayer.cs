@@ -1,5 +1,6 @@
 using OldBit.Beeper.Helpers;
 using OldBit.Beeper.MacOS;
+using OldBit.Beeper.Windows;
 
 namespace OldBit.Beeper;
 
@@ -20,8 +21,7 @@ public class AudioPlayer : IDisposable
         }
         else if (OperatingSystem.IsWindows())
         {
-            // TODO: Implement Windows audio player
-            throw new PlatformNotSupportedException("The current platform is not supported.");
+            _audioPlayer = new CoreAudioPlayer();
         }
         else
         {
@@ -68,5 +68,9 @@ public class AudioPlayer : IDisposable
         }
     }
 
-    void IDisposable.Dispose() => _audioPlayer.Dispose();
+    public void Dispose()
+    {
+        _audioPlayer.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

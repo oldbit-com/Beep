@@ -7,7 +7,7 @@ internal static partial class ClassActivator
 {
     private const int ClsCtxInprocServer = 0x01;
 
-    private static readonly ComWrappers _comWrappers = new StrategyBasedComWrappers();
+    private static readonly ComWrappers ComWrappers = new StrategyBasedComWrappers();
 
     internal static I Activate<I>(string clsid, string iid) => Activate<I>(new Guid(clsid), new Guid(iid));
 
@@ -20,7 +20,7 @@ internal static partial class ClassActivator
             Marshal.ThrowExceptionForHR(result);
         }
 
-        return (I)_comWrappers.GetOrCreateObjectForComInstance(obj, CreateObjectFlags.None);
+        return (I)ComWrappers.GetOrCreateObjectForComInstance(obj, CreateObjectFlags.None);
     }
 
     [LibraryImport("ole32")]

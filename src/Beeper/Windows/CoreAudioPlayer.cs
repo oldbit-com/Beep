@@ -14,8 +14,6 @@ public class CoreAudioPlayer : IAudioPlayer
 
         var device = deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.Render, ERole.Multimedia);
 
-        _ = Marshal.ReleaseComObject(deviceEnumerator);
-        _ = Marshal.ReleaseComObject(device);
     }
 
     public void Start()
