@@ -9,7 +9,9 @@ public class CoreAudioPlayer : IAudioPlayer
 {
     public CoreAudioPlayer()
     {
-        var deviceEnumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
+        var deviceEnumerator = ClassActivator.Activate<IMMDeviceEnumerator>(
+            IMMDeviceEnumerator.ClassId, IMMDeviceEnumerator.InterfaceId);
+
         var device = deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.Render, ERole.Multimedia);
 
         _ = Marshal.ReleaseComObject(deviceEnumerator);

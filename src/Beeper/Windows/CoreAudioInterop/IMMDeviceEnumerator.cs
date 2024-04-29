@@ -1,25 +1,22 @@
 ﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace OldBit.Beeper.Windows.CoreAudioInterop;
 
-[ComImport]
-[Guid("A95664D2-9614-4F35-A746-DE8DB63617E6")]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IMMDeviceEnumerator
+[GeneratedComInterface(StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(BStrStringMarshaller))]
+[Guid(InterfaceId)]
+internal partial interface IMMDeviceEnumerator
 {
+    internal const string InterfaceId = "A95664D2-9614-4F35-A746-DE8DB63617E6";
+    internal const string ClassId = "BCDE0395-E52F-467C-8E3D-C4579291692E";
+
     IMMDeviceCollection EnumAudioEndpoints(EDataFlow dataFlow, DeviceState stateMask);
 
     IMMDevice GetDefaultAudioEndpoint(EDataFlow dataFlow, ERole role);
 
     IMMDevice GetDevice(string id);
 
-    int RegisterEndpointNotificationCallback(IMMNotificationClient client);
+    void RegisterEndpointNotificationCallback(IMMNotificationClient client);
 
-    int UnregisterEndpointNotificationCallback(IMMNotificationClient client);
-}
-
-[ComImport]
-[Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")]
-internal class MMDeviceEnumerator
-{
+    void UnregisterEndpointNotificationCallback([MarshalAs(UnmanagedType.Interface)] IMMNotificationClient client);
 }
