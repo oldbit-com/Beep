@@ -3,11 +3,13 @@ using System.Runtime.InteropServices.Marshalling;
 
 namespace OldBit.Beeper.Windows.CoreAudioInterop;
 
+[Guid(IID)]
 [GeneratedComInterface(StringMarshalling = StringMarshalling.Custom, StringMarshallingCustomType = typeof(BStrStringMarshaller))]
-[Guid("D666063F-1587-4E43-81F1-B948E807363F")]
 internal partial interface IMMDevice
 {
-    void Activate(ref Guid iid, ClsCtx clsCtx, IntPtr activationParams, out IntPtr ppInterface);
+    internal const string IID = "D666063F-1587-4E43-81F1-B948E807363F";
+
+    IAudioClient Activate(ref Guid iid, ClsCtx clsCtx, IntPtr activationParams);
 
     IntPtr OpenPropertyStore(int stgmAccess);
 

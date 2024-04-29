@@ -5,25 +5,28 @@ using System.Runtime.Versioning;
 namespace OldBit.Beeper.Windows;
 
 [SupportedOSPlatform("windows")]
-public class CoreAudioPlayer : IAudioPlayer
+internal class CoreAudioPlayer : IAudioPlayer
 {
-    public CoreAudioPlayer()
+    private readonly IAudioClient _audioClient;
+
+    internal CoreAudioPlayer()
     {
-        var deviceEnumerator = ClassActivator.Activate<IMMDeviceEnumerator>(
-            IMMDeviceEnumerator.ClassId, IMMDeviceEnumerator.InterfaceId);
+        var deviceEnumerator = ClassActivator.Activate<IMMDeviceEnumerator>(IMMDeviceEnumerator.CLSID, IMMDeviceEnumerator.IID);
 
         var device = deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.Render, ERole.Multimedia);
 
+        var audioClientId = new Guid(IAudioClient.IID);
+        _audioClient = device.Activate(ref audioClientId, ClsCtx.All, IntPtr.Zero);
     }
 
     public void Start()
     {
-        throw new NotImplementedException();
+        _audioClient.Start();
     }
 
     public void Stop()
     {
-        throw new NotImplementedException();
+        _audioClient.Stop();
     }
 
     public Task Enqueue(float[] data, CancellationToken cancellationToken = default)
@@ -33,6 +36,5 @@ public class CoreAudioPlayer : IAudioPlayer
 
     public void Dispose()
     {
-        //throw new NotImplementedException();
     }
 }
