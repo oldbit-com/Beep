@@ -5,9 +5,8 @@ using System.Runtime.Versioning;
 namespace OldBit.Beeper.Windows;
 
 [SupportedOSPlatform("windows")]
-public partial class CoreAudioPlayer : IAudioPlayer
+public class CoreAudioPlayer : IAudioPlayer
 {
-   
     public CoreAudioPlayer()
     {
         var deviceEnumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();

@@ -1,5 +1,4 @@
-﻿using System.Data;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace OldBit.Beeper.Windows.CoreAudioInterop;
 
@@ -11,6 +10,12 @@ internal interface IMMDeviceEnumerator
     IMMDeviceCollection EnumAudioEndpoints(EDataFlow dataFlow, DeviceState stateMask);
 
     IMMDevice GetDefaultAudioEndpoint(EDataFlow dataFlow, ERole role);
+
+    IMMDevice GetDevice(string id);
+
+    int RegisterEndpointNotificationCallback(IMMNotificationClient client);
+
+    int UnregisterEndpointNotificationCallback(IMMNotificationClient client);
 }
 
 [ComImport]
