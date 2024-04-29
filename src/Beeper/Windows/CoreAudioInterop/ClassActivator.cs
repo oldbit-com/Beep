@@ -3,7 +3,7 @@ using System.Runtime.InteropServices.Marshalling;
 
 namespace OldBit.Beeper.Windows.CoreAudioInterop;
 
-internal static class ClassActivator
+internal static partial class ClassActivator
 {
     private const int ClsCtxInprocServer = 0x01;
 
@@ -14,7 +14,7 @@ internal static class ClassActivator
     private static I Activate<I>(Guid clsid, Guid iid)
     {
         var result = CoCreateInstance(ref clsid, IntPtr.Zero, ClsCtxInprocServer, ref iid, out var obj);
-        
+
         if (result < 0)
         {
             Marshal.ThrowExceptionForHR(result);
@@ -23,8 +23,8 @@ internal static class ClassActivator
         return (I)_comWrappers.GetOrCreateObjectForComInstance(obj, CreateObjectFlags.None);
     }
 
-    [DllImport("ole32")]
-    private static extern int CoCreateInstance(
+    [LibraryImport("ole32")]
+    private static partial int CoCreateInstance(
         ref Guid rclsid,
         IntPtr pUnkOuter,
         uint dwClsContext,
