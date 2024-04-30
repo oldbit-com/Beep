@@ -21,7 +21,9 @@ public class AudioPlayer : IDisposable
         }
         else if (OperatingSystem.IsWindows())
         {
-            _audioPlayer = new CoreAudioPlayer(sampleRate, channelCount);
+            var audioPlayer = new CoreAudioPlayer(sampleRate, channelCount);
+            _bufferSize = audioPlayer.BufferSize;
+            _audioPlayer = audioPlayer;
         }
         else
         {

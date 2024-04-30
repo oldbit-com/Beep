@@ -1,5 +1,6 @@
 using OldBit.Beeper.Windows.CoreAudioInterop;
 using OldBit.Beeper.Windows.CoreAudioInterop.Enums;
+using System.Drawing;
 using System.Runtime.Versioning;
 
 namespace OldBit.Beeper.Windows;
@@ -8,6 +9,9 @@ namespace OldBit.Beeper.Windows;
 internal class CoreAudioPlayer : IAudioPlayer
 {
     private readonly AudioClient _audioClient;
+    private readonly IAudioRenderClient _renderClient;
+    private readonly int _bufferSize;
+    private EventWaitHandle _frameEventWaitHandle;
 
     internal CoreAudioPlayer(int sampleRate, int channelCount)
     {
@@ -17,7 +21,11 @@ internal class CoreAudioPlayer : IAudioPlayer
         var format = GetFormat(sampleRate, channelCount);
         Initialize(format);
 
-        var renderClient = _audioClient.GetService();
+        var bufferSize = _audioClient.GetBufferSize() - _audioClient.GetCurrentPadding();
+        bufferSize = (int)Math.Floor(bufferSize / 16f) * 16;
+        _bufferSize = bufferSize;
+
+        _renderClient = _audioClient.GetService();
     }
 
     private static IMMDevice GetDevice()
@@ -32,7 +40,7 @@ internal class CoreAudioPlayer : IAudioPlayer
         var audioClientId = new Guid(IAudioClient.IID);
         var audioClient = device.Activate(ref audioClientId, ClsCtx.All, IntPtr.Zero);
 
-        return  new AudioClient(audioClient);
+        return new AudioClient(audioClient);
     }
 
     private static WaveFormatExtensible GetFormat(int sampleRate, int channelCount)
@@ -63,6 +71,9 @@ internal class CoreAudioPlayer : IAudioPlayer
             AudioClientShareMode.Shared,
             AudioClientStreamFlags.EventCallback | AudioClientStreamFlags.NoPersist | AudioClientStreamFlags.AutoConvertPCM,
             TimeSpan.FromMilliseconds(100), format);
+
+        _frameEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+        _audioClient.SetEventHandle(_frameEventWaitHandle.SafeWaitHandle.DangerousGetHandle());
     }
 
     public void Start()
@@ -77,10 +88,17 @@ internal class CoreAudioPlayer : IAudioPlayer
 
     public Task Enqueue(float[] data, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var waitHandles = new WaitHandle[] { _frameEventWaitHandle };
+
+        var buffer = _renderClient.GetBuffer(BufferSize);   
+
+        return Task.CompletedTask;
     }
+
+    internal int BufferSize => _bufferSize;
 
     public void Dispose()
     {
+        _frameEventWaitHandle.Dispose();
     }
 }

@@ -16,7 +16,7 @@ internal partial interface IAudioClient
 
     long GetStreamLatency();
 
-    int GetCurrentPadding();
+    uint GetCurrentPadding();
 
     [PreserveSig]
     int IsFormatSupported(AudioClientShareMode shareMode, WaveFormatExtensible pFormat, IntPtr ppClosestMatch);

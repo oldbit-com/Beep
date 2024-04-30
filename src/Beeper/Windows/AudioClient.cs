@@ -26,6 +26,7 @@ internal class AudioClient
             closestMatch = Marshal.PtrToStructure<WaveFormatExtensible>(closestMatchPtr);
             Marshal.FreeCoTaskMem(closestMatchPtr);
         }
+
         Marshal.FreeHGlobal(closestMatchPtrToPtr);
 
         return result;
@@ -49,7 +50,13 @@ internal class AudioClient
         return _audioClient.GetService(ref audioRenderClientId);
     }
 
+    internal int GetBufferSize() => (int)_audioClient.GetBufferSize();
+
+    internal int GetCurrentPadding() => (int)_audioClient.GetCurrentPadding();
+
     internal void Start() => _audioClient.Start();
 
     internal void Stop() => _audioClient.Stop();
+
+    internal void SetEventHandle(IntPtr eventHandle) => _audioClient.SetEventHandle(eventHandle);
 }
