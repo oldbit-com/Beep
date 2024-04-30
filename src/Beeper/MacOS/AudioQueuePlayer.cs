@@ -43,6 +43,11 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
 
     public void Start()
     {
+        if (_isStarted)
+        {
+            return;
+        }
+
         unsafe
         {
             var status = AudioToolbox.AudioQueueStart(_audioQueue, null);
@@ -58,6 +63,11 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
 
     public void Stop()
     {
+        if (!_isStarted)
+        {
+            return;
+        }
+
         AudioToolbox.AudioQueueStop(_audioQueue, true);
 
         _isStarted = false;
