@@ -1,15 +1,16 @@
 ﻿using System.Runtime.InteropServices;
+using OldBit.Beeper.Windows.CoreAudioInterop.Enums;
 
 namespace OldBit.Beeper.Windows.CoreAudioInterop;
 
-[StructLayout(LayoutKind.Sequential, Pack = 2)]
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 2)]
 internal struct WaveFormat
 {
-    internal WaveFormatTag Tag;
+    internal WaveFormatTag FormatTag;
 
     internal ushort Channels;
 
-    internal uint SampleRate;
+    internal uint SamplesPerSecond;
 
     internal uint AverageBytesPerSecond;
 
@@ -17,5 +18,5 @@ internal struct WaveFormat
 
     internal ushort BitsPerSample;
 
-    internal ushort Size;
+    internal ushort ExtraSize;
 }

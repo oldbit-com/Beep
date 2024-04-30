@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices.Marshalling;
 using System.Runtime.InteropServices;
+using OldBit.Beeper.Windows.CoreAudioInterop.Enums;
 
 namespace OldBit.Beeper.Windows.CoreAudioInterop;
 
@@ -17,7 +18,8 @@ internal partial interface IAudioClient
     
     int GetCurrentPadding();
 
-    IntPtr IsFormatSupported(AudioClientShareMode shareMode, WaveFormat pFormat);
+    [PreserveSig]
+    int IsFormatSupported(AudioClientShareMode shareMode, WaveFormatExtensible pFormat, IntPtr ppClosestMatch);
 
     IntPtr GetMixFormat();
 

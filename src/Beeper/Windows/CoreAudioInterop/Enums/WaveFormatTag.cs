@@ -1,4 +1,4 @@
-﻿namespace OldBit.Beeper.Windows.CoreAudioInterop;
+﻿namespace OldBit.Beeper.Windows.CoreAudioInterop.Enums;
 
 internal enum WaveFormatTag : ushort
 {
@@ -9,4 +9,6 @@ internal enum WaveFormatTag : ushort
     Adpcm = 0x0002,
 
     IeeeFloat = 0x0003,
+
+    Extensible = 0xFFFE,
 }

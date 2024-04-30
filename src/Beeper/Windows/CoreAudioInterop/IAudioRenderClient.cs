@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices.Marshalling;
 using System.Runtime.InteropServices;
+using OldBit.Beeper.Windows.CoreAudioInterop.Enums;
 
 namespace OldBit.Beeper.Windows.CoreAudioInterop;
 

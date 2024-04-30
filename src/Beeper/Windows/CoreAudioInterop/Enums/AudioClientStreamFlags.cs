@@ -1,4 +1,4 @@
-﻿namespace OldBit.Beeper.Windows.CoreAudioInterop;
+﻿namespace OldBit.Beeper.Windows.CoreAudioInterop.Enums;
 
 [Flags]
 internal enum AudioClientStreamFlags : uint
