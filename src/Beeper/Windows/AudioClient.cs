@@ -46,7 +46,7 @@ internal class AudioClient
     internal IAudioRenderClient GetService()
     {
         var audioRenderClientId = new Guid(IAudioRenderClient.IID);
-        
+
         return _audioClient.GetService(ref audioRenderClientId);
     }
 

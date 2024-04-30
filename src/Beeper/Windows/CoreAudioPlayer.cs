@@ -88,7 +88,7 @@ internal class CoreAudioPlayer : IAudioPlayer
     {
         var waitHandles = new WaitHandle[] { _frameEventWaitHandle };
 
-        var buffer = _renderClient.GetBuffer(BufferSize);   
+        var buffer = _renderClient.GetBuffer(BufferSize);
 
         return Task.CompletedTask;
     }
