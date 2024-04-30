@@ -1,5 +1,7 @@
+using OldBit.Beeper.Helpers;
 using OldBit.Beeper.Windows.CoreAudioInterop;
 using OldBit.Beeper.Windows.CoreAudioInterop.Enums;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace OldBit.Beeper.Windows;
@@ -7,7 +9,7 @@ namespace OldBit.Beeper.Windows;
 [SupportedOSPlatform("windows")]
 internal class CoreAudioPlayer : IAudioPlayer
 {
-    private readonly IAudioClient _audioClient;
+    private readonly AudioClient _audioClient;
 
     internal CoreAudioPlayer(int sampleRate, int channelCount)
     {
@@ -16,7 +18,8 @@ internal class CoreAudioPlayer : IAudioPlayer
         var device = deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.Render, ERole.Multimedia);
 
         var audioClientId = new Guid(IAudioClient.IID);
-        _audioClient = device.Activate(ref audioClientId, ClsCtx.All, IntPtr.Zero);
+        var audioClient = device.Activate(ref audioClientId, ClsCtx.All, IntPtr.Zero);
+        _audioClient = new AudioClient(audioClient);
 
         var blockAlign = 32 * channelCount / 8;
         var waveFormat = new WaveFormatExtensible
@@ -33,14 +36,10 @@ internal class CoreAudioPlayer : IAudioPlayer
             },
             ValidBitsPerSample = 32,
             ChannelMask = ChannelMask.Stereo,
-            SubFormat = new Guid("00000003-0000-0010-8000-00aa00389b71") // KSDATAFORMAT_SUBTYPE_IEEE_FLOAT
+            SubFormat = SubFormat.IeeeFloat
         };
-        
-        unsafe
-        {
-            WaveFormatExtensible supportedWaveFormat;
-            var result = _audioClient.IsFormatSupported(AudioClientShareMode.Shared, waveFormat, new IntPtr(&supportedWaveFormat));
-        }
+
+        var result = _audioClient.IsFormatSupported(AudioClientShareMode.Shared, waveFormat, out var closestMatch);
     }
 
     public void Start()
