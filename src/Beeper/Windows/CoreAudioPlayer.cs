@@ -11,7 +11,7 @@ internal class CoreAudioPlayer : IAudioPlayer
     private readonly AudioClient _audioClient;
     private readonly IAudioRenderClient _renderClient;
     private readonly int _bufferSize;
-    private EventWaitHandle _frameEventWaitHandle;
+    private readonly EventWaitHandle _frameEventWaitHandle = new(false, EventResetMode.AutoReset);
 
     internal CoreAudioPlayer(int sampleRate, int channelCount)
     {
@@ -72,7 +72,6 @@ internal class CoreAudioPlayer : IAudioPlayer
             AudioClientStreamFlags.EventCallback | AudioClientStreamFlags.NoPersist | AudioClientStreamFlags.AutoConvertPCM,
             TimeSpan.FromMilliseconds(100), format);
 
-        _frameEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
         _audioClient.SetEventHandle(_frameEventWaitHandle.SafeWaitHandle.DangerousGetHandle());
     }
 
