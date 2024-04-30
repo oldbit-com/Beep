@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading.Channels;
 using OldBit.Beeper.Helpers;
+using OldBit.Beeper.MacOS.AudioToolboxInterop;
 
 namespace OldBit.Beeper.MacOS;
 

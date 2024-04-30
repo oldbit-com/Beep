@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace OldBit.Beeper.MacOS;
+namespace OldBit.Beeper.MacOS.AudioToolboxInterop;
 
 [StructLayout(LayoutKind.Sequential)]
 internal struct AudioStreamBasicDescription
@@ -43,11 +43,11 @@ internal struct AudioTimeStamp
 internal struct AudioQueueBuffer
 {
     public uint AudioDataBytesCapacity;
-    public IntPtr AudioData;
+    public nint AudioData;
     public uint AudioDataByteSize;
-    public IntPtr UserData;
+    public nint UserData;
     public uint PacketDescriptionCapacity;
-    public IntPtr PacketDescriptions;
+    public nint PacketDescriptions;
     public uint PacketDescriptionCount;
 }
 

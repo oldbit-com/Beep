@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using OldBit.Beeper.MacOS.AudioToolboxInterop;
 
 namespace OldBit.Beeper.MacOS;
 
