@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading.Channels;
+using OldBit.Beeper.Helpers;
 
 namespace OldBit.Beeper.MacOS;
 
@@ -10,7 +11,7 @@ namespace OldBit.Beeper.MacOS;
 [SupportedOSPlatform("macos")]
 internal sealed class AudioQueuePlayer: IAudioPlayer
 {
-    private const int FloatSizeInBytes = sizeof(float);
+
     private const int MaxBuffers = 4;
 
     private readonly IntPtr _audioQueue;
@@ -19,7 +20,9 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
     private GCHandle _gch;
     private bool _isStarted;
 
-    internal AudioQueuePlayer(int sampleRate, int channelCount, int bufferSize)
+    internal int BufferSize => 12288;
+
+    internal AudioQueuePlayer(int sampleRate, int channelCount)
     {
         _gch = GCHandle.Alloc(this);
 
@@ -33,7 +36,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         var audioStreamDescription = GetAudioStreamBasicDescription(sampleRate, channelCount);
 
         _audioQueue = AudioQueueNewOutput(audioStreamDescription);
-        _allocatedAudioBuffers = AudioQueueAllocateBuffers(bufferSize);
+        _allocatedAudioBuffers = AudioQueueAllocateBuffers(BufferSize);
 
         foreach (var buffer in _allocatedAudioBuffers)
         {
@@ -85,7 +88,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         unsafe
         {
             var audioQueueBuffer = (AudioQueueBuffer*)buffer;
-            audioQueueBuffer->AudioDataByteSize = (uint)(data.Length * FloatSizeInBytes);
+            audioQueueBuffer->AudioDataByteSize = (uint)(data.Length * AudioFormatHelper.FloatSizeInBytes);
 
             Marshal.Copy(data, 0, audioQueueBuffer->AudioData, data.Length);
 
@@ -103,11 +106,11 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         SampleRate = sampleRate,
         Format = AudioFormatType.LinearPCM,
         FormatFlags = AudioFormatFlags.AudioFormatFlagIsFloat,
-        BytesPerPacket = (uint)(channelCount * FloatSizeInBytes),
+        BytesPerPacket = (uint)(channelCount * AudioFormatHelper.FloatSizeInBytes),
         FramesPerPacket = 1,
-        BytesPerFrame = (uint)(channelCount * FloatSizeInBytes),
+        BytesPerFrame = (uint)(channelCount * AudioFormatHelper.FloatSizeInBytes),
         ChannelsPerFrame = (uint)channelCount,
-        BitsPerChannel = FloatSizeInBytes * 8
+        BitsPerChannel = AudioFormatHelper.FloatSizeInBytes * 8
     };
 
     private IntPtr AudioQueueNewOutput(AudioStreamBasicDescription description)

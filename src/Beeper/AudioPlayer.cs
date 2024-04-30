@@ -8,7 +8,7 @@ public class AudioPlayer : IDisposable
 {
     private readonly AudioFormat _audioFormat;
     private readonly IAudioPlayer _audioPlayer;
-    private readonly int _bufferSize;
+    private readonly int _bufferSizeInBytes;
 
     public AudioPlayer(AudioFormat audioFormat, int sampleRate = 44100, int channelCount = 2)
     {
@@ -16,13 +16,14 @@ public class AudioPlayer : IDisposable
 
         if (OperatingSystem.IsMacOS())
         {
-            _bufferSize = 12288;
-            _audioPlayer = new AudioQueuePlayer(sampleRate, channelCount, _bufferSize);
+            var audioPlayer = new AudioQueuePlayer(sampleRate, channelCount);
+            _bufferSizeInBytes = audioPlayer.BufferSize;
+            _audioPlayer = audioPlayer;
         }
         else if (OperatingSystem.IsWindows())
         {
             var audioPlayer = new CoreAudioPlayer(sampleRate, channelCount);
-            _bufferSize = audioPlayer.BufferSize;
+            _bufferSizeInBytes = audioPlayer.BufferSize;
             _audioPlayer = audioPlayer;
         }
         else
@@ -49,7 +50,7 @@ public class AudioPlayer : IDisposable
 
     public async Task Play(Stream stream, CancellationToken cancellationToken = default)
     {
-        var buffer = new byte[_bufferSize];
+        var buffer = new byte[_bufferSizeInBytes];
         var count = await stream.ReadAsync(buffer, cancellationToken);
 
         while (count > 0)
@@ -61,7 +62,7 @@ public class AudioPlayer : IDisposable
 
     public async Task Play(IEnumerable<byte> data, CancellationToken cancellationToken = default)
     {
-        var chunks = data.Chunk(_bufferSize / 4);
+        var chunks = data.Chunk(_bufferSizeInBytes / AudioFormatHelper.FloatSizeInBytes);
 
         foreach (var chunk in chunks)
         {
