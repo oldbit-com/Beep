@@ -10,7 +10,7 @@ internal partial interface IAudioClient
 {
     internal const string IID = "1CB9AD4C-DBFA-4c32-B178-C2F568A703B2";
 
-    void Initialize(AudioClientShareMode shareMode, AudioClientStreamFlags streamFlags, long hnsBufferDuration, long hnsPeriodicity, IntPtr pFormat, Guid audioSessionGuid);
+    void Initialize(AudioClientShareMode shareMode, AudioClientStreamFlags streamFlags, long hnsBufferDuration, long hnsPeriodicity, WaveFormatExtensible pFormat, ref Guid audioSessionGuid);
 
     uint GetBufferSize();
 
@@ -33,5 +33,5 @@ internal partial interface IAudioClient
 
     void SetEventHandle(IntPtr eventHandle);
 
-    IAudioRenderClient GetService(Guid interfaceId);
+    IAudioRenderClient GetService(ref Guid interfaceId);
 }

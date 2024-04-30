@@ -1,7 +1,5 @@
-using OldBit.Beeper.Helpers;
 using OldBit.Beeper.Windows.CoreAudioInterop;
 using OldBit.Beeper.Windows.CoreAudioInterop.Enums;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace OldBit.Beeper.Windows;
@@ -13,16 +11,37 @@ internal class CoreAudioPlayer : IAudioPlayer
 
     internal CoreAudioPlayer(int sampleRate, int channelCount)
     {
+        var device = GetDevice();
+        _audioClient = GetAudioClient(device);
+        
+        var format = GetFormat(sampleRate, channelCount);
+        Initialize(format);
+
+        var renderClient = _audioClient.GetService();
+
+        
+    }
+
+    private static IMMDevice GetDevice()
+    {
         var deviceEnumerator = ClassActivator.Activate<IMMDeviceEnumerator>(IMMDeviceEnumerator.CLSID, IMMDeviceEnumerator.IID);
 
-        var device = deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.Render, ERole.Multimedia);
+        return deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.Render, ERole.Multimedia);
+    }
 
+    private static AudioClient GetAudioClient(IMMDevice device)
+    {
         var audioClientId = new Guid(IAudioClient.IID);
         var audioClient = device.Activate(ref audioClientId, ClsCtx.All, IntPtr.Zero);
-        _audioClient = new AudioClient(audioClient);
+        
+        return  new AudioClient(audioClient);
+    }
 
+    private static WaveFormatExtensible GetFormat(int sampleRate, int channelCount)
+    {
         var blockAlign = 32 * channelCount / 8;
-        var waveFormat = new WaveFormatExtensible
+        
+        return new WaveFormatExtensible
         {
             WaveFormat = new WaveFormat
             {
@@ -38,8 +57,14 @@ internal class CoreAudioPlayer : IAudioPlayer
             ChannelMask = ChannelMask.Stereo,
             SubFormat = SubFormat.IeeeFloat
         };
+    }
 
-        var result = _audioClient.IsFormatSupported(AudioClientShareMode.Shared, waveFormat, out var closestMatch);
+    private void Initialize(WaveFormatExtensible format)
+    {
+        _audioClient.Initialize(
+            AudioClientShareMode.Shared,
+            AudioClientStreamFlags.EventCallback | AudioClientStreamFlags.NoPersist | AudioClientStreamFlags.AutoConvertPCM,
+            TimeSpan.FromMilliseconds(100), format);
     }
 
     public void Start()

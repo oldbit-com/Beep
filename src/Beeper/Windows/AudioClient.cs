@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualBasic;
-using OldBit.Beeper.Windows.CoreAudioInterop;
+﻿using OldBit.Beeper.Windows.CoreAudioInterop;
 using OldBit.Beeper.Windows.CoreAudioInterop.Enums;
 using System.Runtime.InteropServices;
 
@@ -14,12 +13,12 @@ internal class AudioClient
         _audioClient = audioClient;
     }
 
-    internal int IsFormatSupported(AudioClientShareMode shareMode, WaveFormatExtensible waveFormat, out WaveFormatExtensible? closestMatch)
+    internal int IsFormatSupported(AudioClientShareMode shareMode, WaveFormatExtensible format, out WaveFormatExtensible? closestMatch)
     {
         closestMatch = null;
 
         var closestMatchPtrToPtr = Marshal.AllocHGlobal(Marshal.SizeOf<IntPtr>());
-        var result = _audioClient.IsFormatSupported(AudioClientShareMode.Shared, waveFormat, closestMatchPtrToPtr);
+        var result = _audioClient.IsFormatSupported(AudioClientShareMode.Shared, format, closestMatchPtrToPtr);
 
         var closestMatchPtr = Marshal.PtrToStructure<IntPtr>(closestMatchPtrToPtr);
         if (closestMatchPtr != IntPtr.Zero)
@@ -30,6 +29,24 @@ internal class AudioClient
         Marshal.FreeHGlobal(closestMatchPtrToPtr);
 
         return result;
+    }
+
+    internal void Initialize(AudioClientShareMode shareMode, AudioClientStreamFlags streamFlags, TimeSpan bufferDuration, WaveFormatExtensible format)
+    {
+        var bufferSize = (long)(TimeSpan.FromMilliseconds(100).TotalNanoseconds / 100);
+        var audioSessionId = Guid.Empty;
+
+        _audioClient.Initialize(
+            AudioClientShareMode.Shared,
+            AudioClientStreamFlags.EventCallback | AudioClientStreamFlags.NoPersist | AudioClientStreamFlags.AutoConvertPCM,
+            bufferSize, 0, format, ref audioSessionId);
+    }
+
+    internal IAudioRenderClient GetService()
+    {
+        var audioRenderClientId = new Guid(IAudioRenderClient.IID);
+        
+        return _audioClient.GetService(ref audioRenderClientId);
     }
 
     internal void Start() => _audioClient.Start();
