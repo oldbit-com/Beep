@@ -15,7 +15,7 @@ internal partial interface IAudioClient
     uint GetBufferSize();
 
     long GetStreamLatency();
-    
+
     int GetCurrentPadding();
 
     [PreserveSig]

@@ -13,13 +13,11 @@ internal class CoreAudioPlayer : IAudioPlayer
     {
         var device = GetDevice();
         _audioClient = GetAudioClient(device);
-        
+
         var format = GetFormat(sampleRate, channelCount);
         Initialize(format);
 
         var renderClient = _audioClient.GetService();
-
-        
     }
 
     private static IMMDevice GetDevice()
@@ -33,14 +31,14 @@ internal class CoreAudioPlayer : IAudioPlayer
     {
         var audioClientId = new Guid(IAudioClient.IID);
         var audioClient = device.Activate(ref audioClientId, ClsCtx.All, IntPtr.Zero);
-        
+
         return  new AudioClient(audioClient);
     }
 
     private static WaveFormatExtensible GetFormat(int sampleRate, int channelCount)
     {
         var blockAlign = 32 * channelCount / 8;
-        
+
         return new WaveFormatExtensible
         {
             WaveFormat = new WaveFormat
