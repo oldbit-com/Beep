@@ -1,6 +1,5 @@
 using OldBit.Beeper.Windows.CoreAudioInterop;
 using OldBit.Beeper.Windows.CoreAudioInterop.Enums;
-using System.Drawing;
 using System.Runtime.Versioning;
 
 namespace OldBit.Beeper.Windows;
