@@ -20,8 +20,6 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
     private GCHandle _gch;
     private bool _isStarted;
 
-    internal static int BufferSize => 12288;
-
     internal AudioQueuePlayer(int sampleRate, int channelCount)
     {
         _gch = GCHandle.Alloc(this);
@@ -36,7 +34,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         var audioStreamDescription = GetAudioStreamBasicDescription(sampleRate, channelCount);
 
         _audioQueue = AudioQueueNewOutput(audioStreamDescription);
-        _allocatedAudioBuffers = AudioQueueAllocateBuffers(BufferSize);
+        _allocatedAudioBuffers = AudioQueueAllocateBuffers(BufferSizeInBytes);
 
         foreach (var buffer in _allocatedAudioBuffers)
         {
@@ -100,6 +98,8 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
             }
         }
     }
+
+    public int BufferSizeInBytes => 12288;
 
     private static AudioStreamBasicDescription GetAudioStreamBasicDescription(int sampleRate, int channelCount) => new()
     {

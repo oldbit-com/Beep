@@ -8,28 +8,26 @@ public class AudioPlayer : IDisposable
 {
     private readonly AudioFormat _audioFormat;
     private readonly IAudioPlayer _audioPlayer;
-    private readonly int _bufferSizeInBytes;
 
     public AudioPlayer(AudioFormat audioFormat, int sampleRate = 44100, int channelCount = 2)
     {
         _audioFormat = audioFormat;
 
+        IAudioPlayer audioPlayer;
         if (OperatingSystem.IsMacOS())
         {
-            var audioPlayer = new AudioQueuePlayer(sampleRate, channelCount);
-            _bufferSizeInBytes = AudioQueuePlayer.BufferSize;
-            _audioPlayer = audioPlayer;
+            audioPlayer = new AudioQueuePlayer(sampleRate, channelCount);
         }
         else if (OperatingSystem.IsWindows())
         {
-            var audioPlayer = new CoreAudioPlayer(sampleRate, channelCount);
-            _bufferSizeInBytes = audioPlayer.BufferSize;
-            _audioPlayer = audioPlayer;
+            audioPlayer = new CoreAudioPlayer(sampleRate, channelCount);
         }
         else
         {
             throw new PlatformNotSupportedException($"The current platform is not supported.");
         }
+
+        _audioPlayer = audioPlayer;
     }
 
     /// <summary>
@@ -50,7 +48,7 @@ public class AudioPlayer : IDisposable
 
     public async Task Play(Stream stream, CancellationToken cancellationToken = default)
     {
-        var buffer = new byte[_bufferSizeInBytes];
+        var buffer = new byte[_audioPlayer.BufferSizeInBytes];
         var count = await stream.ReadAsync(buffer, cancellationToken);
 
         while (count > 0)
@@ -62,7 +60,7 @@ public class AudioPlayer : IDisposable
 
     public async Task Play(IEnumerable<byte> data, CancellationToken cancellationToken = default)
     {
-        var chunks = data.Chunk(_bufferSizeInBytes / AudioFormatHelper.FloatSizeInBytes);
+        var chunks = data.Chunk(_audioPlayer.BufferSizeInBytes / AudioFormatHelper.FloatSizeInBytes);
 
         foreach (var chunk in chunks)
         {

@@ -9,7 +9,6 @@ internal class CoreAudioPlayer : IAudioPlayer
 {
     private readonly AudioClient _audioClient;
     private readonly IAudioRenderClient _renderClient;
-    private readonly int _bufferSize;
     private readonly EventWaitHandle _frameEventWaitHandle = new(false, EventResetMode.AutoReset);
 
     internal CoreAudioPlayer(int sampleRate, int channelCount)
@@ -22,7 +21,7 @@ internal class CoreAudioPlayer : IAudioPlayer
 
         var bufferSize = _audioClient.GetBufferSize() - _audioClient.GetCurrentPadding();
         bufferSize = (int)Math.Floor(bufferSize / 16f) * 16;
-        _bufferSize = bufferSize;
+        BufferSizeInBytes = bufferSize;
 
         _renderClient = _audioClient.GetService();
     }
@@ -90,12 +89,12 @@ internal class CoreAudioPlayer : IAudioPlayer
 
         WaitHandle.WaitAny(waitHandles);
 
-        var buffer = _renderClient.GetBuffer(BufferSize);
+        var buffer = _renderClient.GetBuffer(BufferSizeInBytes);
 
         return Task.CompletedTask;
     }
 
-    internal int BufferSize => _bufferSize;
+    public int BufferSizeInBytes { get; }
 
     public void Dispose()
     {
