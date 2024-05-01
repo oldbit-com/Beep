@@ -17,7 +17,7 @@ public class AudioPlayer : IDisposable
         if (OperatingSystem.IsMacOS())
         {
             var audioPlayer = new AudioQueuePlayer(sampleRate, channelCount);
-            _bufferSizeInBytes = audioPlayer.BufferSize;
+            _bufferSizeInBytes = AudioQueuePlayer.BufferSize;
             _audioPlayer = audioPlayer;
         }
         else if (OperatingSystem.IsWindows())
