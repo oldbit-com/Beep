@@ -1,24 +1,26 @@
 # Beeper
 
-Beeper is a simple cross platform dotnet library for playing audio.
+Beeper is a simple cross platform dotnet library for playing audio using PCM data. By default dotnet does not have a built in 
+way to play audio and this library provides a very basic way to play audio.
 
-By default dotnet does not have a built in way to play audio, so this library provides a very simple way to play PCM audio in dotnet projects.
+It was inspired by the [oto](https://github.com/ebitengine/oto) golang library that I used before. However, it is not a direct port of it.
 
-It was inspired by the [oto](https://github.com/ebitengine/oto) golang library I used before.
-
-The library does not have any dependencies, it uses native OS libraries to play audio.
+## Features
+- no external dependencies other than native OS libraries
+- cross platform, currently supports MacOS and Windows
+- supports 8-bit unsigned, 16-bit signed and 32-bit float PCM audio
 
 However this is more an example and exercise how to create cross platform libraries in dotnet with native OS dependencies.
-
-
 Supported platforms:
-- MacOS
-- Windows
+- [MacOS](#MacOS)
+- [Windows](#Windows)
+- Linux TBD
 
 ### MacOS
-It uses AudioToolbox.framework to play audio.
+Audio playback is implemented using It uses [AudioToolbox.framework](https://developer.apple.com/documentation/audiotoolbox).
 
 ### Windows
+Audio playback is implemented using [WASAPI](https://docs.microsoft.com/en-us/windows/win32/coreaudio/wasapi).
 
 ## Usage
 
