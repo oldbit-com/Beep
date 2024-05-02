@@ -83,7 +83,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
             throw new InvalidOperationException("The audio player is not started. Use the Start method to start the player.");
         }
 
-        var pcmData = new float[BufferSizeInBytes / AudioFormatHelper.FloatSizeInBytes];
+        var pcmData = new float[BufferSizeInBytes / FloatType.SizeInBytes];
 
         while (true)
         {
@@ -106,7 +106,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         unsafe
         {
             var audioQueueBuffer = (AudioQueueBuffer*)buffer;
-            audioQueueBuffer->AudioDataByteSize = (uint)(length * AudioFormatHelper.FloatSizeInBytes);
+            audioQueueBuffer->AudioDataByteSize = (uint)(length * FloatType.SizeInBytes);
 
             Marshal.Copy(pcmData, 0, audioQueueBuffer->AudioData, length);
 
@@ -126,11 +126,11 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         SampleRate = sampleRate,
         Format = AudioFormatType.LinearPCM,
         FormatFlags = AudioFormatFlags.AudioFormatFlagIsFloat,
-        BytesPerPacket = (uint)(channelCount * AudioFormatHelper.FloatSizeInBytes),
+        BytesPerPacket = (uint)(channelCount * FloatType.SizeInBytes),
         FramesPerPacket = 1,
-        BytesPerFrame = (uint)(channelCount * AudioFormatHelper.FloatSizeInBytes),
+        BytesPerFrame = (uint)(channelCount * FloatType.SizeInBytes),
         ChannelsPerFrame = (uint)channelCount,
-        BitsPerChannel = AudioFormatHelper.FloatSizeInBytes * 8
+        BitsPerChannel = FloatType.SizeInBytes * 8
     };
 
     private IntPtr AudioQueueNewOutput(AudioStreamBasicDescription description)

@@ -3,7 +3,7 @@ using OldBit.Beeper.Helpers;
 
 namespace OldBit.Beeper.UnitTests;
 
-public class AudioFormatHelperTests
+public class FloatTypeTests
 {
     [Theory]
     [InlineData(AudioFormat.Unsigned8Bit, 1)]
