@@ -46,15 +46,15 @@ public class AudioPlayer : IDisposable
         _audioPlayer.Stop();
     }
 
+    public Task Play(IEnumerable<byte> data, CancellationToken cancellationToken = default) =>
+        Play(new ByteStream(data), cancellationToken);
+
     public async Task Play(Stream stream, CancellationToken cancellationToken = default)
     {
         using var pcmDataReader = new PcmDataReader(stream, _audioFormat);
 
         await _audioPlayer.Play(pcmDataReader, cancellationToken);
     }
-
-    public Task Play(IEnumerable<byte> data, CancellationToken cancellationToken = default) =>
-        Play(new ByteStream(data), cancellationToken);
 
     public void Dispose()
     {
