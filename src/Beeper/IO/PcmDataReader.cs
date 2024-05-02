@@ -2,6 +2,9 @@ using OldBit.Beeper.Helpers;
 
 namespace OldBit.Beeper.IO;
 
+/// <summary>
+/// Reads PCM audio data from a stream. It converts the data to a float array.
+/// </summary>
 internal class PcmDataReader : IDisposable
 {
     private readonly Stream _stream;
@@ -46,11 +49,6 @@ internal class PcmDataReader : IDisposable
         }
 
         return offset;
-    }
-
-    internal void Close()
-    {
-        Dispose(true);
     }
 
     private void Dispose(bool disposing)

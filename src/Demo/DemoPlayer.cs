@@ -1,7 +1,5 @@
 using Demo.Generator;
 using OldBit.Beeper;
-using OldBit.Beeper.Helpers;
-using OldBit.Beeper.IO;
 
 namespace Demo;
 
@@ -37,7 +35,7 @@ public class DemoPlayer(string audioFormatString, int sampleRate, int channelCou
         using var audioPlayer = new AudioPlayer(_audioFormat, sampleRate, channelCount);
 
         audioPlayer.Start();
-        await audioPlayer.Play(new ByteStream(audioData));
+        await audioPlayer.Play(audioData);
         audioPlayer.Stop();
     }
 

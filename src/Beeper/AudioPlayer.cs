@@ -1,4 +1,3 @@
-using OldBit.Beeper.Helpers;
 using OldBit.Beeper.IO;
 using OldBit.Beeper.MacOS;
 using OldBit.Beeper.Windows;
@@ -54,16 +53,8 @@ public class AudioPlayer : IDisposable
         await _audioPlayer.Play(pcmDataReader, cancellationToken);
     }
 
-    // public async Task Play(IEnumerable<byte> data, CancellationToken cancellationToken = default)
-    // {
-    //     var chunks = data.Chunk(_audioPlayer.BufferSizeInBytes / AudioFormatHelper.FloatSizeInBytes);
-    //
-    //     foreach (var chunk in chunks)
-    //     {
-    //         var floats = PcmDataConverter.ToFloats(_audioFormat, chunk).ToArray();
-    //         await _audioPlayer.Enqueue(floats, cancellationToken);
-    //     }
-    // }
+    public Task Play(IEnumerable<byte> data, CancellationToken cancellationToken = default) =>
+        Play(new ByteStream(data), cancellationToken);
 
     public void Dispose()
     {

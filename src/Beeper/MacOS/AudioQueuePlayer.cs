@@ -75,7 +75,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         _isStarted = false;
     }
 
-    public async Task Play(PcmDataReader reader, CancellationToken cancellationToken = default)
+    public async Task Play(PcmDataReader reader, CancellationToken cancellationToken)
     {
         if (_isStarted == false)
         {
@@ -86,6 +86,8 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
 
         while (true)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var length = reader.Read(pcmData);
             if (length == 0)
             {

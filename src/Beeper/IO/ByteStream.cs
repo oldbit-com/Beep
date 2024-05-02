@@ -1,6 +1,9 @@
 namespace OldBit.Beeper.IO;
 
-public class ByteStream(IEnumerable<byte> data) : Stream
+/// <summary>
+/// The ByteStream class allows reading enumeration of bytes as a stream.
+/// </summary>
+internal class ByteStream(IEnumerable<byte> data) : Stream
 {
     private readonly IEnumerator<byte> _input = data.GetEnumerator();
 
