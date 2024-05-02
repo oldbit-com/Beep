@@ -1,8 +1,8 @@
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
-using OldBit.Beeper.Windows.CoreAudioInterop.Enums;
+using OldBit.Beeper.Windows.WasapiInterop.Enums;
 
-namespace OldBit.Beeper.Windows.CoreAudioInterop;
+namespace OldBit.Beeper.Windows.WasapiInterop;
 
 [Guid(IID)]
 [GeneratedComInterface]

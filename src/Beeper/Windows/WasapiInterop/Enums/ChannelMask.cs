@@ -1,4 +1,4 @@
-﻿namespace OldBit.Beeper.Windows.CoreAudioInterop.Enums;
+﻿namespace OldBit.Beeper.Windows.WasapiInterop.Enums;
 
 internal enum ChannelMask : uint
 {

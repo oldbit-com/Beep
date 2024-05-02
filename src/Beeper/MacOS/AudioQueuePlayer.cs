@@ -14,6 +14,7 @@ namespace OldBit.Beeper.MacOS;
 internal sealed class AudioQueuePlayer: IAudioPlayer
 {
     private const int MaxBuffers = 4;
+    private const int BufferSizeInBytes = 12288;
 
     private readonly IntPtr _audioQueue;
     private readonly List<IntPtr> _allocatedAudioBuffers;
@@ -118,7 +119,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         }
     }
 
-    public int BufferSizeInBytes => 12288;
+
 
     private static AudioStreamBasicDescription GetAudioStreamBasicDescription(int sampleRate, int channelCount) => new()
     {

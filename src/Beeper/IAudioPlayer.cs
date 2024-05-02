@@ -10,6 +10,4 @@ internal interface IAudioPlayer : IDisposable
     void Stop();
 
     Task Play(PcmDataReader reader, CancellationToken cancellationToken);
-
-    int BufferSizeInBytes { get; }
 }

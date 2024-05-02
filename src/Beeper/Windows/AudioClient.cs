@@ -1,6 +1,6 @@
-﻿using OldBit.Beeper.Windows.CoreAudioInterop;
-using OldBit.Beeper.Windows.CoreAudioInterop.Enums;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
+using OldBit.Beeper.Windows.WasapiInterop;
+using OldBit.Beeper.Windows.WasapiInterop.Enums;
 
 namespace OldBit.Beeper.Windows;
 
