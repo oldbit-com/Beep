@@ -1,4 +1,5 @@
 using OldBit.Beeper.Helpers;
+using OldBit.Beeper.IO;
 using OldBit.Beeper.MacOS;
 using OldBit.Beeper.Windows;
 
@@ -48,26 +49,21 @@ public class AudioPlayer : IDisposable
 
     public async Task Play(Stream stream, CancellationToken cancellationToken = default)
     {
-        var buffer = new byte[_audioPlayer.BufferSizeInBytes];
-        var count = await stream.ReadAsync(buffer, cancellationToken);
+        using var pcmDataReader = new PcmDataReader(stream, _audioFormat);
 
-        while (count > 0)
-        {
-            await Play(buffer.Take(count), cancellationToken);
-            count = await stream.ReadAsync(buffer, cancellationToken);
-        }
+        await _audioPlayer.Play(pcmDataReader, cancellationToken);
     }
 
-    public async Task Play(IEnumerable<byte> data, CancellationToken cancellationToken = default)
-    {
-        var chunks = data.Chunk(_audioPlayer.BufferSizeInBytes / AudioFormatHelper.FloatSizeInBytes);
-
-        foreach (var chunk in chunks)
-        {
-            var floats = PcmDataConverter.ToFloats(_audioFormat, chunk).ToArray();
-            await _audioPlayer.Enqueue(floats, cancellationToken);
-        }
-    }
+    // public async Task Play(IEnumerable<byte> data, CancellationToken cancellationToken = default)
+    // {
+    //     var chunks = data.Chunk(_audioPlayer.BufferSizeInBytes / AudioFormatHelper.FloatSizeInBytes);
+    //
+    //     foreach (var chunk in chunks)
+    //     {
+    //         var floats = PcmDataConverter.ToFloats(_audioFormat, chunk).ToArray();
+    //         await _audioPlayer.Enqueue(floats, cancellationToken);
+    //     }
+    // }
 
     public void Dispose()
     {

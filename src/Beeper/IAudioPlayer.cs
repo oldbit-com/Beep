@@ -1,12 +1,15 @@
+using OldBit.Beeper.Helpers;
+using OldBit.Beeper.IO;
+
 namespace OldBit.Beeper;
 
-public interface IAudioPlayer : IDisposable
+internal interface IAudioPlayer : IDisposable
 {
     void Start();
 
     void Stop();
 
-    Task Enqueue(float[] data, CancellationToken cancellationToken = default);
+    Task Play(PcmDataReader reader, CancellationToken cancellationToken);
 
     int BufferSizeInBytes { get; }
 }

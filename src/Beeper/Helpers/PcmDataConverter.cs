@@ -7,11 +7,6 @@ internal static class PcmDataConverter
 {
     internal static IEnumerable<float> ToFloats(AudioFormat format, byte[] data)
     {
-        if (data.Length % 4 != 0)
-        {
-            throw new AudioPlayerException("Invalid data length. The data length must be a multiple of 4.");
-        }
-
         var increment = AudioFormatHelper.GetByteSize(format);
 
         for (var i = 0; i < data.Length; i += increment)

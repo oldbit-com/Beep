@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading.Channels;
 using OldBit.Beeper.Helpers;
+using OldBit.Beeper.IO;
 using OldBit.Beeper.MacOS.AudioToolboxInterop;
 
 namespace OldBit.Beeper.MacOS;
@@ -74,21 +75,37 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         _isStarted = false;
     }
 
-    public async Task Enqueue(float[] data, CancellationToken cancellationToken = default)
+    public async Task Play(PcmDataReader reader, CancellationToken cancellationToken = default)
     {
         if (_isStarted == false)
         {
             throw new InvalidOperationException("The audio player is not started. Use the Start method to start the player.");
         }
 
+        var pcmData = new float[BufferSizeInBytes / AudioFormatHelper.FloatSizeInBytes];
+
+        while (true)
+        {
+            var length = reader.Read(pcmData);
+            if (length == 0)
+            {
+                break;
+            }
+
+            await Enqueue(pcmData, length, cancellationToken);
+        }
+    }
+
+    private async Task Enqueue(float[] pcmData, int length,  CancellationToken cancellationToken)
+    {
         var buffer = await _availableAudioBuffers.Reader.ReadAsync(cancellationToken);
 
         unsafe
         {
             var audioQueueBuffer = (AudioQueueBuffer*)buffer;
-            audioQueueBuffer->AudioDataByteSize = (uint)(data.Length * AudioFormatHelper.FloatSizeInBytes);
+            audioQueueBuffer->AudioDataByteSize = (uint)(length * AudioFormatHelper.FloatSizeInBytes);
 
-            Marshal.Copy(data, 0, audioQueueBuffer->AudioData, data.Length);
+            Marshal.Copy(pcmData, 0, audioQueueBuffer->AudioData, length);
 
             var status = AudioToolbox.AudioQueueEnqueueBuffer(_audioQueue, audioQueueBuffer, 0, null);
 

@@ -1,6 +1,8 @@
 using OldBit.Beeper.Windows.CoreAudioInterop;
 using OldBit.Beeper.Windows.CoreAudioInterop.Enums;
 using System.Runtime.Versioning;
+using OldBit.Beeper.Helpers;
+using OldBit.Beeper.IO;
 
 namespace OldBit.Beeper.Windows;
 
@@ -83,7 +85,12 @@ internal class CoreAudioPlayer : IAudioPlayer
         _audioClient.Stop();
     }
 
-    public Task Enqueue(float[] data, CancellationToken cancellationToken = default)
+    public Task Play(PcmDataReader reader, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task Enqueue(float[] pcmData, CancellationToken cancellationToken = default)
     {
         var waitHandles = new WaitHandle[] { _frameEventWaitHandle };
 
