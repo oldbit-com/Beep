@@ -1,3 +1,4 @@
+using OldBit.Beeper.Extensions;
 using OldBit.Beeper.Helpers;
 
 namespace OldBit.Beeper.IO;
@@ -19,7 +20,7 @@ internal class PcmDataReader : IDisposable
 
     internal int Read(Span<float> buffer)
     {
-        var byteSize = AudioFormatHelper.GetByteSize(_format);
+        var byteSize = _format.GetByteSize();
         var byteBuffer = new byte[buffer.Length * byteSize];
         var bytesRead = _stream.Read(byteBuffer, 0, buffer.Length * byteSize);
 

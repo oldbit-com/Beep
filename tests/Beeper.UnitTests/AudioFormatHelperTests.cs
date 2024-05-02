@@ -1,3 +1,4 @@
+using OldBit.Beeper.Extensions;
 using OldBit.Beeper.Helpers;
 
 namespace OldBit.Beeper.UnitTests;
@@ -10,7 +11,7 @@ public class AudioFormatHelperTests
     [InlineData(AudioFormat.Float32BitLittleEndian, 4)]
     public void GetByteSize_ShouldReturnCorrectNumberOfBytes(AudioFormat audioFormat, int expectedBytes)
     {
-        var numberOfBytes = AudioFormatHelper.GetByteSize(audioFormat);
+        var numberOfBytes = audioFormat.GetByteSize();
 
         Assert.Equal(expectedBytes, numberOfBytes);
     }

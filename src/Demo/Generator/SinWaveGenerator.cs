@@ -1,4 +1,5 @@
 using OldBit.Beeper;
+using OldBit.Beeper.Extensions;
 using OldBit.Beeper.Helpers;
 
 namespace Demo.Generator;
@@ -17,7 +18,7 @@ public class SinWaveGenerator(AudioFormat format, int sampleRate = 44100, int ch
     {
         var sampleLength = sampleRate / frequency;
 
-        var byteSize = AudioFormatHelper.GetByteSize(format) * channelCount;
+        var byteSize = format.GetByteSize() * channelCount;
         var bufferSize = CalculateBufferSize(duration);
 
         for (var i = 0; i < bufferSize / byteSize; i++)
@@ -73,7 +74,7 @@ public class SinWaveGenerator(AudioFormat format, int sampleRate = 44100, int ch
     /// <returns>The calculated buffer size.</returns>
     private int CalculateBufferSize(TimeSpan duration)
     {
-        var size = AudioFormatHelper.GetByteSize(format) * channelCount * sampleRate * duration.TotalSeconds;
+        var size = format.GetByteSize() * channelCount * sampleRate * duration.TotalSeconds;
 
         return (int)Math.Ceiling(size / 4) * 4;
     }
