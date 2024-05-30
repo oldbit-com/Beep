@@ -15,5 +15,7 @@ public class ByteStreamTests
         var bytesRead = stream.Read(buffer, 0, buffer.Length);
 
         bytesRead.Should().Be(data.Length);
+        buffer.Take(100).Should().BeEquivalentTo(data.Take(100));
+        buffer.Skip(100).Should().AllSatisfy(x => x.Should().Be(0));
     }
 }
