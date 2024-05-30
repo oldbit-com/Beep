@@ -46,9 +46,19 @@ public class AudioPlayer : IDisposable
         _audioPlayer.Stop();
     }
 
+    /// <summary>
+    /// Plays the audio data.
+    /// </summary>
+    /// <param name="data">The audio data to play. This is an enumerable collection of bytes.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     public Task Play(IEnumerable<byte> data, CancellationToken cancellationToken = default) =>
         Play(new ByteStream(data), cancellationToken);
 
+    /// <summary>
+    /// Plays the audio data from a stream.
+    /// </summary>
+    /// <param name="stream">The stream containing audio data to play. This is a Stream object.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests. </param>
     public async Task Play(Stream stream, CancellationToken cancellationToken = default)
     {
         using var pcmDataReader = new PcmDataReader(stream, _audioFormat);
