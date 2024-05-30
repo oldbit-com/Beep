@@ -1,6 +1,6 @@
-using OldBit.Beeper.MacOS;
+using OldBit.Beeper.Platforms.MacOS;
+using OldBit.Beeper.Platforms.Windows;
 using OldBit.Beeper.Readers;
-using OldBit.Beeper.Windows;
 
 namespace OldBit.Beeper;
 

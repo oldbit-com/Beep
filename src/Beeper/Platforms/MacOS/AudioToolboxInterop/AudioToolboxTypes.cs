@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace OldBit.Beeper.MacOS.AudioToolboxInterop;
+namespace OldBit.Beeper.Platforms.MacOS.AudioToolboxInterop;
 
 [StructLayout(LayoutKind.Sequential)]
 internal struct AudioStreamBasicDescription

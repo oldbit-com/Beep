@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
-using OldBit.Beeper.Windows.WasapiInterop.Enums;
+using OldBit.Beeper.Platforms.Windows.WasapiInterop.Enums;
 
-namespace OldBit.Beeper.Windows.WasapiInterop;
+namespace OldBit.Beeper.Platforms.Windows.WasapiInterop;
 
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 2)]
 internal struct WaveFormat

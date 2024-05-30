@@ -1,8 +1,8 @@
 ﻿using System.Runtime.InteropServices;
-using OldBit.Beeper.Windows.WasapiInterop;
-using OldBit.Beeper.Windows.WasapiInterop.Enums;
+using OldBit.Beeper.Platforms.Windows.WasapiInterop;
+using OldBit.Beeper.Platforms.Windows.WasapiInterop.Enums;
 
-namespace OldBit.Beeper.Windows;
+namespace OldBit.Beeper.Platforms.Windows;
 
 internal class AudioClient
 {

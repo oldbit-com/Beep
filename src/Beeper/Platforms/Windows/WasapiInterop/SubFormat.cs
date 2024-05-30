@@ -1,4 +1,4 @@
-﻿namespace OldBit.Beeper.Windows.WasapiInterop;
+﻿namespace OldBit.Beeper.Platforms.Windows.WasapiInterop;
 
 internal static class SubFormat
 {

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 
-namespace OldBit.Beeper.Windows;
+namespace OldBit.Beeper.Platforms.Windows;
 
 internal static partial class ClassActivator
 {

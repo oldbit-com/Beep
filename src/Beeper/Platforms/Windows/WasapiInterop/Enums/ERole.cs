@@ -1,4 +1,4 @@
-﻿namespace OldBit.Beeper.Windows.WasapiInterop.Enums;
+﻿namespace OldBit.Beeper.Platforms.Windows.WasapiInterop.Enums;
 
 internal enum ERole
 {

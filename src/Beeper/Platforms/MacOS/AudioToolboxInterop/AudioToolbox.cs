@@ -1,7 +1,6 @@
 using System.Runtime.InteropServices;
-using OldBit.Beeper.MacOS.AudioToolboxInterop;
 
-namespace OldBit.Beeper.MacOS;
+namespace OldBit.Beeper.Platforms.MacOS.AudioToolboxInterop;
 
 using OSStatus = int;
 

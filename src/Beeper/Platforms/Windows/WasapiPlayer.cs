@@ -1,9 +1,9 @@
 using System.Runtime.Versioning;
+using OldBit.Beeper.Platforms.Windows.WasapiInterop;
+using OldBit.Beeper.Platforms.Windows.WasapiInterop.Enums;
 using OldBit.Beeper.Readers;
-using OldBit.Beeper.Windows.WasapiInterop;
-using OldBit.Beeper.Windows.WasapiInterop.Enums;
 
-namespace OldBit.Beeper.Windows;
+namespace OldBit.Beeper.Platforms.Windows;
 
 [SupportedOSPlatform("windows")]
 internal class CoreAudioPlayer : IAudioPlayer

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 
-namespace OldBit.Beeper.Windows.WasapiInterop;
+namespace OldBit.Beeper.Platforms.Windows.WasapiInterop;
 
 [Guid(IID)]
 [GeneratedComInterface]
