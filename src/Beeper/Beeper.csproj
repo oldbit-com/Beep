@@ -15,4 +15,8 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="OldBit.Beeper.UnitTests" />
+    </ItemGroup>
+
 </Project>

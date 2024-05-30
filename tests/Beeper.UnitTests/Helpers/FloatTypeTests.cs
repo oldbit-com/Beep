@@ -1,7 +1,7 @@
+using FluentAssertions;
 using OldBit.Beeper.Extensions;
-using OldBit.Beeper.Helpers;
 
-namespace OldBit.Beeper.UnitTests;
+namespace OldBit.Beeper.UnitTests.Helpers;
 
 public class FloatTypeTests
 {
@@ -13,6 +13,6 @@ public class FloatTypeTests
     {
         var numberOfBytes = audioFormat.GetByteSize();
 
-        Assert.Equal(expectedBytes, numberOfBytes);
+        numberOfBytes.Should().Be(expectedBytes);
     }
 }

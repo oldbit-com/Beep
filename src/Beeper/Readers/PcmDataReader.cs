@@ -1,7 +1,6 @@
 using OldBit.Beeper.Extensions;
-using OldBit.Beeper.Helpers;
 
-namespace OldBit.Beeper.IO;
+namespace OldBit.Beeper.Readers;
 
 /// <summary>
 /// Reads PCM audio data from a stream. It converts the data to a float array.

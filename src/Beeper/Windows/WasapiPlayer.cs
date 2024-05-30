@@ -1,5 +1,5 @@
 using System.Runtime.Versioning;
-using OldBit.Beeper.IO;
+using OldBit.Beeper.Readers;
 using OldBit.Beeper.Windows.WasapiInterop;
 using OldBit.Beeper.Windows.WasapiInterop.Enums;
 

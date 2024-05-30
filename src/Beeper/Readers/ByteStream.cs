@@ -1,4 +1,4 @@
-namespace OldBit.Beeper.IO;
+namespace OldBit.Beeper.Readers;
 
 /// <summary>
 /// The ByteStream class allows reading enumeration of bytes as a stream.
