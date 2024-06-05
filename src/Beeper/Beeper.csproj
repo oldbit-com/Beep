@@ -7,7 +7,7 @@
         <AssemblyName>OldBit.Beeper</AssemblyName>
         <RootNamespace>OldBit.Beeper</RootNamespace>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>0.0.2</Version>
+        <Version>0.0.3</Version>
         <Title>OldBit.Beeper</Title>
         <Authors>Wojciech Sobieszek</Authors>
         <RepositoryUrl>https://github.com/oldbit-com/Beeper</RepositoryUrl>
