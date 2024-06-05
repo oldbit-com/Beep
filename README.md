@@ -1,6 +1,6 @@
-# Beeper
+# Beep
 
-Beeper is a simple cross platform dotnet library for playing audio using PCM data. By default dotnet does not have a built in 
+Beep is a simple cross platform dotnet library for playing audio using PCM data. By default dotnet does not have a built in 
 way to play audio and this library provides a very basic way to play audio.
 
 It was inspired by the [oto](https://github.com/ebitengine/oto) golang library that I used before. However, it is not a direct port of it.
@@ -25,7 +25,7 @@ Audio playback is implemented using [WASAPI](https://docs.microsoft.com/en-us/wi
 ## Usage
 
 ```csharp
-using OldBit.Beeper;
+using OldBit.Beep;
 
 using var audioPlayer = new AudioPlayer(AudioFormat.Float32BitLittleEndian, 44100, 2);
 audioPlayer.Start();
