@@ -1,4 +1,5 @@
 using FluentAssertions;
+using OldBit.Beep.Readers;
 
 namespace OldBit.Beep.UnitTests.Readers;
 
