@@ -51,19 +51,19 @@ public class AudioPlayer : IDisposable
     /// </summary>
     /// <param name="data">The audio data to play. This is an enumerable collection of bytes.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-    public Task Play(IEnumerable<byte> data, CancellationToken cancellationToken = default) =>
-        Play(new ByteStream(data), cancellationToken);
+    public Task PlayAsync(IEnumerable<byte> data, CancellationToken cancellationToken = default) =>
+        PlayAsync(new ByteStream(data), cancellationToken);
 
     /// <summary>
     /// Plays the audio data from a stream.
     /// </summary>
     /// <param name="stream">The stream containing audio data to play. This is a Stream object.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests. </param>
-    public async Task Play(Stream stream, CancellationToken cancellationToken = default)
+    public async Task PlayAsync(Stream stream, CancellationToken cancellationToken = default)
     {
         using var pcmDataReader = new PcmDataReader(stream, _audioFormat);
 
-        await _audioPlayer.Play(pcmDataReader, cancellationToken);
+        await _audioPlayer.PlayAsync(pcmDataReader, cancellationToken);
     }
 
     public void Dispose()

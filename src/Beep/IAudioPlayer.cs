@@ -8,5 +8,5 @@ internal interface IAudioPlayer : IDisposable
 
     void Stop();
 
-    Task Play(PcmDataReader reader, CancellationToken cancellationToken);
+    Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken);
 }

@@ -14,20 +14,20 @@ public class DemoPlayer(string audioFormatString, int sampleRate, int channelCou
 
     private readonly AudioFormat _audioFormat = GetAudioFormat(audioFormatString);
 
-    public async Task Play()
+    public async Task PlayAsync()
     {
-        var playerC5 = Task.Run(async () => { await StartPlayer(NoteC5); });
+        var playerC5 = Task.Run(async () => { await StartPlayerAsync(NoteC5); });
 
         await Task.Delay(TimeSpan.FromSeconds(1));
-        var playerE5 = Task.Run(async () => { await StartPlayer(NoteE5); });
+        var playerE5 = Task.Run(async () => { await StartPlayerAsync(NoteE5); });
 
         await Task.Delay(TimeSpan.FromSeconds(1));
-        var playerG5 = Task.Run(async () => { await StartPlayer(NoteG5); });
+        var playerG5 = Task.Run(async () => { await StartPlayerAsync(NoteG5); });
 
         await Task.WhenAll(playerC5, playerE5, playerG5);
     }
 
-    private async Task StartPlayer(float note)
+    private async Task StartPlayerAsync(float note)
     {
         var sinWaveGenerator = new SinWaveGenerator(_audioFormat, sampleRate, channelCount);
         var audioData = sinWaveGenerator.Generate(note, TimeSpan.FromSeconds(3));
@@ -35,7 +35,7 @@ public class DemoPlayer(string audioFormatString, int sampleRate, int channelCou
         using var audioPlayer = new AudioPlayer(_audioFormat, sampleRate, channelCount);
 
         audioPlayer.Start();
-        await audioPlayer.Play(audioData);
+        await audioPlayer.PlayAsync(audioData);
         audioPlayer.Stop();
     }
 

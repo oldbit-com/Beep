@@ -22,7 +22,7 @@ rootCommand.SetHandler(async (format, sampleRate, channels) =>
     Console.WriteLine($"Format: {format}  Sample rate: {sampleRate}  Channels: {channels}");
 
     var demoPlayer = new DemoPlayer(format, sampleRate, channels);
-    await demoPlayer.Play();
+    await demoPlayer.PlayAsync();
 
 }, formatOption, sampleRateOption, channelsOption);
 

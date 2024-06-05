@@ -84,7 +84,7 @@ internal class CoreAudioPlayer : IAudioPlayer
         _audioClient.Stop();
     }
 
-    public Task Play(PcmDataReader reader, CancellationToken cancellationToken = default)
+    public Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }

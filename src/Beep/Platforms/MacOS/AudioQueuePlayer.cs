@@ -76,7 +76,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         _isStarted = false;
     }
 
-    public async Task Play(PcmDataReader reader, CancellationToken cancellationToken)
+    public async Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken)
     {
         if (_isStarted == false)
         {
