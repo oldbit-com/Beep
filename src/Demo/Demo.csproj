@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Beeper\Beeper.csproj" />
+      <ProjectReference Include="..\Beep\Beep.csproj" />
     </ItemGroup>
 
     <ItemGroup>

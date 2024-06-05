@@ -1,6 +1,5 @@
-using OldBit.Beeper;
-using OldBit.Beeper.Extensions;
-using OldBit.Beeper.Helpers;
+using OldBit.Beep;
+using OldBit.Beep.Extensions;
 
 namespace Demo.Generator;
 

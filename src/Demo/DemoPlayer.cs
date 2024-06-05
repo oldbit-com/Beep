@@ -1,5 +1,5 @@
 using Demo.Generator;
-using OldBit.Beeper;
+using OldBit.Beep;
 
 namespace Demo;
 

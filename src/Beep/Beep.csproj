@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>OldBit.Beep</AssemblyName>
+        <RootNamespace>OldBit.Beep</RootNamespace>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Version>0.0.4</Version>
+        <Title>OldBit.Beep</Title>
+        <Authors>Wojciech Sobieszek</Authors>
+        <RepositoryUrl>https://github.com/oldbit-com/Beep</RepositoryUrl>
+        <Description>Simple cross platform dotnet library for playing audio</Description>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="OldBit.Beeper.UnitTests" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Platforms\" />
+    </ItemGroup>
+
+</Project>
