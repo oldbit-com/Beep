@@ -16,7 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="OldBit.Beep.UnitTests" />
+        <InternalsVisibleTo Include="OldBit.Beep.Tests" />
     </ItemGroup>
 
     <ItemGroup>

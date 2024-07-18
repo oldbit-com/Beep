@@ -1,7 +1,7 @@
 using FluentAssertions;
 using OldBit.Beep.Readers;
 
-namespace OldBit.Beep.UnitTests.Readers;
+namespace OldBit.Beep.Tests.Readers;
 
 public class ByteStreamTests
 {

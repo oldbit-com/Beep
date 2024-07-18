@@ -7,8 +7,8 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <AssemblyName>OldBit.Beep.UnitTests</AssemblyName>
-        <RootNamespace>OldBit.Beep.UnitTests</RootNamespace>
+        <AssemblyName>OldBit.Beep.Tests</AssemblyName>
+        <RootNamespace>OldBit.Beep.Tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

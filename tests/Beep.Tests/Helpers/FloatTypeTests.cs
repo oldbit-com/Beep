@@ -1,7 +1,7 @@
 using FluentAssertions;
 using OldBit.Beep.Extensions;
 
-namespace OldBit.Beep.UnitTests.Helpers;
+namespace OldBit.Beep.Tests.Helpers;
 
 public class FloatTypeTests
 {

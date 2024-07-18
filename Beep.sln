@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep", "src\Beep\Beep.cspro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo", "src\Demo\Demo.csproj", "{AA935767-537A-4154-B002-88D761E8AF0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.UnitTests", "tests\Beep.UnitTests\Beep.UnitTests.csproj", "{55F7EF7D-B2D1-4695-A7C7-C84DB1520B81}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beep.Tests", "tests\Beep.Tests\Beep.Tests.csproj", "{55F7EF7D-B2D1-4695-A7C7-C84DB1520B81}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
