@@ -33,7 +33,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
             FullMode = BoundedChannelFullMode.Wait
         });
 
-        var audioStreamDescription = GetAudioStreamBasicDescription(sampleRate, channelCount);
+        var audioStreamDescription = CreateAudioStreamBasicDescription(sampleRate, channelCount);
 
         _audioQueue = AudioQueueNewOutput(audioStreamDescription);
         _allocatedAudioBuffers = AudioQueueAllocateBuffers(BufferSizeInBytes);
@@ -119,9 +119,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         }
     }
 
-
-
-    private static AudioStreamBasicDescription GetAudioStreamBasicDescription(int sampleRate, int channelCount) => new()
+    private static AudioStreamBasicDescription CreateAudioStreamBasicDescription(int sampleRate, int channelCount) => new()
     {
         SampleRate = sampleRate,
         Format = AudioFormatType.LinearPCM,
