@@ -21,7 +21,7 @@ volumeOption.AddValidator(result =>
 {
     if (result.GetValueForOption(volumeOption) < 1 || result.GetValueForOption(volumeOption) > 100)
     {
-        result.ErrorMessage = "Volume must be between 1 and 1000";
+        result.ErrorMessage = "Volume must be between 1 and 100";
     }
 });
 volumeOption.AddAlias("-v");
