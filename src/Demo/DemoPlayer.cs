@@ -6,13 +6,11 @@ namespace Demo;
 /// <summary>
 /// Demonstrates how to play a sequence of notes.
 /// </summary>
-public class DemoPlayer(string audioFormatString, int sampleRate, int channelCount, WaveType waveType, int volume)
+public class DemoPlayer(AudioFormat audioFormat, int sampleRate, int channelCount, WaveType waveType, int volume)
 {
     private const float NoteC5 = 523.25f;
     private const float NoteE5 = 659.25f;
     private const float NoteG5 = 783.99f;
-
-    private readonly AudioFormat _audioFormat = GetAudioFormat(audioFormatString);
 
     public async Task PlayAsync()
     {
@@ -29,22 +27,14 @@ public class DemoPlayer(string audioFormatString, int sampleRate, int channelCou
 
     private async Task StartPlayerAsync(float note)
     {
-        var waveGenerator = WaveGeneratorFactory.CreateWaveGenerator(_audioFormat, waveType, sampleRate, channelCount);
+        var waveGenerator = WaveGeneratorFactory.CreateWaveGenerator(audioFormat, waveType, sampleRate, channelCount);
         var audioData = waveGenerator.Generate(note, TimeSpan.FromSeconds(3));
 
-        using var audioPlayer = new AudioPlayer(_audioFormat, sampleRate, channelCount);
+        using var audioPlayer = new AudioPlayer(audioFormat, sampleRate, channelCount);
         audioPlayer.Volume = volume;
 
         audioPlayer.Start();
         await audioPlayer.PlayAsync(audioData);
         audioPlayer.Stop();
     }
-
-    private static AudioFormat GetAudioFormat(string audioFormat) => audioFormat switch
-    {
-        "u8" => AudioFormat.Unsigned8Bit,
-        "s16le" => AudioFormat.Signed16BitIntegerLittleEndian,
-        "f32le" => AudioFormat.Float32BitLittleEndian,
-        _ => throw new NotSupportedException("The audio format is not supported.")
-    };
 }

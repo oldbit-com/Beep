@@ -1,10 +1,11 @@
 ﻿using System.CommandLine;
 using Demo;
 using Demo.Generator;
+using OldBit.Beep;
 
-var formatOption = new Option<string>("--format", () => "f32le", "The format of the output file")
+var audioFormatOption = new Option<string>("--format", () => "f32le", "The format of the output file")
     .FromAmong("f32le", "s16le", "u8");
-formatOption.AddAlias("-f");
+audioFormatOption.AddAlias("-f");
 
 var sampleRateOption = new Option<int>("--rate", () => 44100, "The sample rate");
 sampleRateOption.AddAlias("-r");
@@ -28,22 +29,31 @@ volumeOption.AddValidator(result =>
 volumeOption.AddAlias("-v");
 
 var rootCommand = new RootCommand("Plays a demo audio.");
-rootCommand.AddOption(formatOption);
+rootCommand.AddOption(audioFormatOption);
 rootCommand.AddOption(sampleRateOption);
 rootCommand.AddOption(channelsOption);
 rootCommand.AddOption(waveOption);
 rootCommand.AddOption(volumeOption);
 
-rootCommand.SetHandler(async (format, sampleRate, channels, waveType, volume) =>
+rootCommand.SetHandler(async (audioFormat, sampleRate, channels, waveType, volume) =>
 {
     Console.WriteLine("Playing demo audio...");
-    Console.WriteLine($"Format: {format}  Sample rate: {sampleRate}  Channels: {channels}  WaveType: {waveType}  Volume: {volume}");
+    Console.WriteLine($"Format: {audioFormat}  Sample rate: {sampleRate}  Channels: {channels}  WaveType: {waveType}  Volume: {volume}");
 
+    var parsedAudioFormat = audioFormat switch
+    {
+        "u8" => AudioFormat.Unsigned8Bit,
+        "s16le" => AudioFormat.Signed16BitIntegerLittleEndian,
+        "f32le" => AudioFormat.Float32BitLittleEndian,
+        _ => throw new NotSupportedException("The audio format is not supported.")
+    };
     var parsedWaveType = Enum.Parse<WaveType>(waveType, ignoreCase: true);
-    var demoPlayer = new DemoPlayer(format, sampleRate, channels, parsedWaveType, volume);
+    var demoPlayer = new DemoPlayer(parsedAudioFormat, sampleRate, channels, parsedWaveType, volume);
 
     await demoPlayer.PlayAsync();
 
-}, formatOption, sampleRateOption, channelsOption, waveOption, volumeOption);
+    Console.WriteLine("Finished playing audio.");
+
+}, audioFormatOption, sampleRateOption, channelsOption, waveOption, volumeOption);
 
 await rootCommand.InvokeAsync(args);
