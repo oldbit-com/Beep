@@ -40,6 +40,7 @@ rootCommand.SetHandler(async (format, sampleRate, channels, waveType, volume) =>
 
     var parsedWaveType = Enum.Parse<WaveType>(waveType, ignoreCase: true);
     var demoPlayer = new DemoPlayer(format, sampleRate, channels, parsedWaveType, volume);
+
     await demoPlayer.PlayAsync();
 
 }, formatOption, sampleRateOption, channelsOption, waveOption, volumeOption);
