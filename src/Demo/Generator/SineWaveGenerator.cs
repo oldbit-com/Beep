@@ -3,12 +3,6 @@ using OldBit.Beep.Extensions;
 
 namespace Demo.Generator;
 
-/// <summary>
-/// Generates a simple sine wave.
-/// </summary>
-/// <param name="format">The audio format.</param>
-/// <param name="sampleRate">The sample rate. Typically 44100, 48000.</param>
-/// <param name="channelCount">The number of channels.</param>
 public class SineWaveGenerator(AudioFormat format, int sampleRate = 44100, int channelCount = 2) : IWaveGenerator
 {
     public IEnumerable<byte> Generate(float frequency, TimeSpan duration)
@@ -64,11 +58,6 @@ public class SineWaveGenerator(AudioFormat format, int sampleRate = 44100, int c
 
     private static double GetSampleValue(double angle, double amplitude) => amplitude * Math.Sin(angle);
 
-    /// <summary>
-    /// Calculates the buffer size needed for the specified duration. It is a multiple of 4.
-    /// </summary>
-    /// <param name="duration">The duration for which the buffer size is to be calculated.</param>
-    /// <returns>The calculated buffer size.</returns>
     private int CalculateBufferSize(TimeSpan duration)
     {
         var size = format.GetByteSize() * channelCount * sampleRate * duration.TotalSeconds;

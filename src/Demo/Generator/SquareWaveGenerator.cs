@@ -52,11 +52,6 @@ public class SquareWaveGenerator(AudioFormat format, int sampleRate = 44100, int
         }
     }
 
-    /// <summary>
-    /// Calculates the buffer size needed for the specified duration. It is a multiple of 4.
-    /// </summary>
-    /// <param name="duration">The duration for which the buffer size is to be calculated.</param>
-    /// <returns>The calculated buffer size.</returns>
     private int CalculateBufferSize(TimeSpan duration)
     {
         var size = format.GetByteSize() * channelCount * sampleRate * duration.TotalSeconds;
