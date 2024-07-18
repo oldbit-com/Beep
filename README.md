@@ -24,10 +24,16 @@ Audio playback is implemented using [WASAPI](https://docs.microsoft.com/en-us/wi
 
 ## Usage
 
+### Demo
+Please check [Demo](src/Demo) project for an example how to use the library.
+
+### Code
 ```csharp
 using OldBit.Beep;
 
 using var audioPlayer = new AudioPlayer(AudioFormat.Float32BitLittleEndian, 44100, 2);
+audioPlayer.Volume = 50;  // That is the default value, valid values are 1-100
+
 audioPlayer.Start();
 await audioPlayer.EnqueueAsync(new byyte[] { 0.5f, 0.5f, 0.5f, 0.5f });
 audioPlayer.Stop();

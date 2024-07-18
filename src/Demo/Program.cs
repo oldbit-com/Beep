@@ -12,7 +12,7 @@ sampleRateOption.AddAlias("-r");
 var channelsOption = new Option<int>("--channels", () => 2, "The number of channels");
 channelsOption.AddAlias("-c");
 
-var waveOption = new Option<string>("--wave", () => "sin", "The type of waive to generate")
+var waveOption = new Option<string>("--wave", () => "sine", "The type of waive to generate")
     .FromAmong("sine", "square");
 waveOption.AddAlias("-w");
 
@@ -26,7 +26,7 @@ volumeOption.AddValidator(result =>
 });
 volumeOption.AddAlias("-v");
 
-var rootCommand = new RootCommand();
+var rootCommand = new RootCommand("Plays a demo audio.");
 rootCommand.AddOption(formatOption);
 rootCommand.AddOption(sampleRateOption);
 rootCommand.AddOption(channelsOption);
