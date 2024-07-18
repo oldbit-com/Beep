@@ -9,49 +9,46 @@ namespace Demo.Generator;
 /// <param name="format">The audio format.</param>
 /// <param name="sampleRate">The sample rate. Typically 44100, 48000.</param>
 /// <param name="channelCount">The number of channels.</param>
-public class SinWaveGenerator(AudioFormat format, int sampleRate = 44100, int channelCount = 2)
+public class SineWaveGenerator(AudioFormat format, int sampleRate = 44100, int channelCount = 2) : IWaveGenerator
 {
-    private int _sampleNumber;
-
     public IEnumerable<byte> Generate(float frequency, TimeSpan duration)
     {
-        var sampleLength = sampleRate / frequency;
-
         var byteSize = format.GetByteSize() * channelCount;
         var bufferSize = CalculateBufferSize(duration);
 
         for (var i = 0; i < bufferSize / byteSize; i++)
         {
-            var multiplier  = 2 * Math.PI * _sampleNumber / sampleLength;
+            var angle = 2 * Math.PI * frequency * i / sampleRate;
+
             double sampleValue;
 
             switch (format)
             {
                 case AudioFormat.Unsigned8Bit:
-                    sampleValue = Math.Sin(multiplier) * 0.3 * 127;
+                    sampleValue = GetSampleValue(angle, amplitude: 127) + 128;
 
                     for (var channel = 0; channel < channelCount; channel++)
                     {
-                        yield return (byte)(sampleValue + 128);
+                        yield return (byte)sampleValue;
                     }
 
                     break;
 
                 case AudioFormat.Signed16BitIntegerLittleEndian:
-                    sampleValue = Math.Sin(multiplier) * 0.3 * 32767;
+                    sampleValue = GetSampleValue(angle, amplitude: 32767);
 
                     for (var channel = 0; channel < channelCount; channel++)
                     {
                         yield return (byte)sampleValue;
-                        yield return (byte)((int)sampleValue >> 8);
+                        yield return (byte)((short)sampleValue >> 8);
                     }
 
                     break;
 
                 case AudioFormat.Float32BitLittleEndian:
-                    sampleValue = Math.Sin(multiplier) * 0.3;
-                    var bytes = BitConverter.GetBytes((float)sampleValue);
+                    sampleValue = GetSampleValue(angle, amplitude: 1f);
 
+                    var bytes = BitConverter.GetBytes((float)sampleValue);
                     for (var channel = 0; channel < channelCount; channel++)
                     {
                         yield return bytes[0];
@@ -59,12 +56,13 @@ public class SinWaveGenerator(AudioFormat format, int sampleRate = 44100, int ch
                         yield return bytes[2];
                         yield return bytes[3];
                     }
+
                     break;
             }
-
-            _sampleNumber += 1;
         }
     }
+
+    private static double GetSampleValue(double angle, double amplitude) => amplitude * Math.Sin(angle);
 
     /// <summary>
     /// Calculates the buffer size needed for the specified duration. It is a multiple of 4.

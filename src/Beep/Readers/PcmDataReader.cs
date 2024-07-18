@@ -11,6 +11,8 @@ internal class PcmDataReader : IDisposable
     private readonly AudioFormat _format;
     private bool _disposed;
 
+    internal int Volume { get; set; }
+
     internal PcmDataReader(Stream input, AudioFormat format)
     {
         _stream = input;
@@ -36,13 +38,13 @@ internal class PcmDataReader : IDisposable
             buffer[offset++] = _format switch
             {
                 AudioFormat.Unsigned8Bit =>
-                    byteBuffer[i] / 128f - 1,
+                   VolumeAdjuster.Adjust(byteBuffer[i], Volume) / 128f - 1,
 
                 AudioFormat.Signed16BitIntegerLittleEndian =>
-                    BitConverter.ToInt16(byteBuffer, i) / 32768f,
+                    VolumeAdjuster.Adjust(BitConverter.ToInt16(byteBuffer, i), Volume) / 32768f,
 
                 AudioFormat.Float32BitLittleEndian =>
-                    BitConverter.ToSingle(byteBuffer, i),
+                    VolumeAdjuster.Adjust(BitConverter.ToSingle(byteBuffer, i), Volume),
 
                 _ => throw new ArgumentException($"Invalid audio format: {_format}.")
             };

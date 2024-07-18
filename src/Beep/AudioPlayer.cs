@@ -8,6 +8,7 @@ public class AudioPlayer : IDisposable
 {
     private readonly AudioFormat _audioFormat;
     private readonly IAudioPlayer _audioPlayer;
+    private int _volume = 50;
 
     public AudioPlayer(AudioFormat audioFormat, int sampleRate = 44100, int channelCount = 2)
     {
@@ -28,6 +29,23 @@ public class AudioPlayer : IDisposable
         }
 
         _audioPlayer = audioPlayer;
+    }
+
+    /// <summary>
+    /// Gets or sets the volume of the audio player. The volume must be between 1 and 100.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public int Volume
+    {
+        get => _volume;
+        set
+        {
+            if (value is < 1 or > 100)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Volume), "The volume must be between 1 and 100.");
+            }
+            _volume = value;
+        }
     }
 
     /// <summary>
@@ -62,6 +80,7 @@ public class AudioPlayer : IDisposable
     public async Task PlayAsync(Stream stream, CancellationToken cancellationToken = default)
     {
         using var pcmDataReader = new PcmDataReader(stream, _audioFormat);
+        pcmDataReader.Volume = _volume;
 
         await _audioPlayer.PlayAsync(pcmDataReader, cancellationToken);
     }
