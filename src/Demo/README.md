@@ -24,5 +24,7 @@ Options:
 Example:
 
 ```shell
-./Demo -w square -f s16le -r 11025 -v 50 -c 2
+./Demo -w square -f s16le -r 11025 -v 50 -c 1
+
+./Demo --wave square --format u8 --rate 44100
 ```
