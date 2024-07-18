@@ -29,7 +29,6 @@ public class SquareWaveGenerator(AudioFormat format, int sampleRate = 44100, int
 
                 case AudioFormat.Signed16BitIntegerLittleEndian:
                     sampleValue = highAmplitude ? 32767 : -32767;
-
                     for (var channel = 0; channel < channelCount; channel++)
                     {
                         yield return (byte)sampleValue;
