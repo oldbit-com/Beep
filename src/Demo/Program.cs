@@ -19,7 +19,8 @@ waveOption.AddAlias("-w");
 var volumeOption = new Option<int>("--vol", () => 50, "The volume level");
 volumeOption.AddValidator(result =>
 {
-    if (result.GetValueForOption(volumeOption) < 1 || result.GetValueForOption(volumeOption) > 100)
+    var volume = result.GetValueForOption(volumeOption);
+    if (volume is < 1 or > 100)
     {
         result.ErrorMessage = "Volume must be between 1 and 100";
     }
