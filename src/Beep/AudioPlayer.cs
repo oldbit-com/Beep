@@ -4,20 +4,34 @@ using OldBit.Beep.Readers;
 
 namespace OldBit.Beep;
 
+/// <summary>
+/// Represents a simple multiplatform audio player.
+/// </summary>
 public class AudioPlayer : IDisposable
 {
     private readonly AudioFormat _audioFormat;
     private readonly IAudioPlayer _audioPlayer;
     private int _volume = 50;
 
-    public AudioPlayer(AudioFormat audioFormat, int sampleRate = 44100, int channelCount = 2)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AudioPlayer"/> class with specified audio format, sample rate, channel count, and player options.
+    /// </summary>
+    /// <param name="audioFormat">The audio format to be used by the audio player.</param>
+    /// <param name="sampleRate">The sample rate of the audio data. Defaults to 44100 Hz.</param>
+    /// <param name="channelCount">The number of audio channels. Defaults to 2 for stereo sound.</param>
+    /// <param name="playerOptions">Optional player options to customize the behavior of the audio player. If not provided, default options are used.</param>
+    /// <exception cref="PlatformNotSupportedException">Thrown when the current platform is not supported.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when arguments are not valid.</exception>
+    public AudioPlayer(AudioFormat audioFormat, int sampleRate = 44100, int channelCount = 2, PlayerOptions? playerOptions = null)
     {
+        playerOptions?.ThrowIfNotValid();
+
         _audioFormat = audioFormat;
 
         IAudioPlayer audioPlayer;
         if (OperatingSystem.IsMacOS())
         {
-            audioPlayer = new AudioQueuePlayer(sampleRate, channelCount);
+            audioPlayer = new AudioQueuePlayer(sampleRate, channelCount, playerOptions ?? PlayerOptions.Default);
         }
         else if (OperatingSystem.IsWindows())
         {

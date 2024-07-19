@@ -13,20 +13,19 @@ namespace OldBit.Beep.Platforms.MacOS;
 [SupportedOSPlatform("macos")]
 internal sealed class AudioQueuePlayer: IAudioPlayer
 {
-    private const int MaxBuffers = 4;
-    private const int BufferSizeInBytes = 12288;
-
+    private readonly PlayerOptions _playerOptions;
     private readonly IntPtr _audioQueue;
     private readonly List<IntPtr> _allocatedAudioBuffers;
     private readonly Channel<IntPtr> _availableAudioBuffers;
     private GCHandle _gch;
     private bool _isStarted;
 
-    internal AudioQueuePlayer(int sampleRate, int channelCount)
+    internal AudioQueuePlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
+        _playerOptions = playerOptions;
         _gch = GCHandle.Alloc(this);
 
-        _availableAudioBuffers = Channel.CreateBounded<IntPtr>(new BoundedChannelOptions(MaxBuffers)
+        _availableAudioBuffers = Channel.CreateBounded<IntPtr>(new BoundedChannelOptions(_playerOptions.MaxBuffers)
         {
             SingleReader = true,
             SingleWriter = true,
@@ -36,7 +35,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         var audioStreamDescription = CreateAudioStreamBasicDescription(sampleRate, channelCount);
 
         _audioQueue = AudioQueueNewOutput(audioStreamDescription);
-        _allocatedAudioBuffers = AudioQueueAllocateBuffers(BufferSizeInBytes);
+        _allocatedAudioBuffers = AudioQueueAllocateBuffers(_playerOptions.BufferSizeInBytes);
 
         foreach (var buffer in _allocatedAudioBuffers)
         {
@@ -83,7 +82,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
             throw new InvalidOperationException("The audio player is not started. Use the Start method to start the player.");
         }
 
-        var pcmData = new float[BufferSizeInBytes / FloatType.SizeInBytes];
+        var pcmData = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
 
         while (true)
         {
@@ -151,7 +150,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
     {
         var buffers = new List<IntPtr>();
 
-        for (var i = 0; i < MaxBuffers; i++)
+        for (var i = 0; i < _playerOptions.MaxBuffers; i++)
         {
             var status = AudioToolbox.AudioQueueAllocateBuffer(_audioQueue, (uint)bufferSize, out var buffer);
 
