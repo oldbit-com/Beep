@@ -10,11 +10,25 @@ public class PlayerOptions
     /// <summary>
     /// Gets or sets the size of the audio buffer in bytes. Default is 1024 bytes.
     /// </summary>
+    /// <remarks>
+    /// This setting applies to AudioToolbox (macOS) only.
+    /// </remarks>
     public int BufferSizeInBytes { get; set; } = 1024;
 
     /// <summary>
-    /// Gets or sets the maximum number of audio buffers. Default is 4.
+    /// Gets or sets the duration of the audio buffer. Default is 1 second.
     /// </summary>
+    /// <remarks>
+    /// This setting applies to Wasapi (Windows) only.
+    /// </remarks>
+    public TimeSpan BufferDuration { get; set; } = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// Gets or sets the maximum number of audio buffers. Default is 4. This setting applies to macOS only.
+    /// </summary>
+    /// <remarks>
+    /// This setting applies to AudioToolbox (macOS) only.
+    /// </remarks>
     public int MaxBuffers { get; set; } = 4;
 
     internal void ThrowIfNotValid()

@@ -11,6 +11,7 @@ public class AudioPlayer : IDisposable
 {
     private readonly AudioFormat _audioFormat;
     private readonly IAudioPlayer _audioPlayer;
+    private readonly int _channelCount;
     private int _volume = 50;
 
     /// <summary>
@@ -27,6 +28,7 @@ public class AudioPlayer : IDisposable
         playerOptions?.ThrowIfNotValid();
 
         _audioFormat = audioFormat;
+        _channelCount = channelCount;
 
         IAudioPlayer audioPlayer;
         if (OperatingSystem.IsMacOS())
@@ -35,7 +37,7 @@ public class AudioPlayer : IDisposable
         }
         else if (OperatingSystem.IsWindows())
         {
-            audioPlayer = new CoreAudioPlayer(sampleRate, channelCount);
+            audioPlayer = new CoreAudioPlayer(sampleRate, channelCount, playerOptions ?? PlayerOptions.Default);
         }
         else
         {
@@ -93,7 +95,7 @@ public class AudioPlayer : IDisposable
     /// <param name="cancellationToken">The token to monitor for cancellation requests. </param>
     public async Task PlayAsync(Stream stream, CancellationToken cancellationToken = default)
     {
-        using var pcmDataReader = new PcmDataReader(stream, _audioFormat);
+        using var pcmDataReader = new PcmDataReader(stream, _audioFormat, _channelCount);
         pcmDataReader.Volume = _volume;
 
         await _audioPlayer.PlayAsync(pcmDataReader, cancellationToken);

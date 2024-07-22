@@ -1,4 +1,6 @@
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using OldBit.Beep.Helpers;
 using OldBit.Beep.Platforms.Windows.WasapiInterop;
 using OldBit.Beep.Platforms.Windows.WasapiInterop.Enums;
 using OldBit.Beep.Readers;
@@ -8,41 +10,67 @@ namespace OldBit.Beep.Platforms.Windows;
 [SupportedOSPlatform("windows")]
 internal class CoreAudioPlayer : IAudioPlayer
 {
-    private readonly AudioClient _audioClient;
+    private const int RefTimesPerSecond = 10_000_000;
+    private const int RefTimesPerMillisecond = 10_000;
+
+    private readonly IAudioClient _audioClient;
     private readonly IAudioRenderClient _renderClient;
-    private readonly EventWaitHandle _frameEventWaitHandle = new(false, EventResetMode.AutoReset);
+    private readonly EventWaitHandle[] _waitHandles = [new(false, EventResetMode.AutoReset)];
+    private readonly int _bufferFrameCount;
+    private readonly int _frameSize;
+    private readonly TimeSpan _halfBufferDuration;
 
-    internal CoreAudioPlayer(int sampleRate, int channelCount)
+    internal CoreAudioPlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
-        var device = GetDevice();
-        _audioClient = GetAudioClient(device);
+        _audioClient = Activate();
 
-        var format = GetFormat(sampleRate, channelCount);
-        Initialize(format);
+        Initialize(sampleRate, channelCount, playerOptions.BufferDuration);
 
-        var bufferSize = _audioClient.GetBufferSize() - _audioClient.GetCurrentPadding();
-        bufferSize = (int)Math.Floor(bufferSize / 16f) * 16;
-        BufferSizeInBytes = bufferSize;
+        _bufferFrameCount = _audioClient.GetBufferSize();
+        _frameSize = channelCount * FloatType.SizeInBytes;
 
-        _renderClient = _audioClient.GetService();
+        var bufferDuration = (double)RefTimesPerSecond * _bufferFrameCount / sampleRate;
+        _halfBufferDuration = TimeSpan.FromMilliseconds(bufferDuration / RefTimesPerMillisecond / 2);
+
+        var audioRenderClientId = new Guid(IAudioRenderClient.IID);
+        _renderClient = _audioClient.GetService(ref audioRenderClientId);
     }
 
-    private static IMMDevice GetDevice()
+    private static IAudioClient Activate()
     {
         var deviceEnumerator = ClassActivator.Activate<IMMDeviceEnumerator>(IMMDeviceEnumerator.CLSID, IMMDeviceEnumerator.IID);
+        var device = deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.Render, ERole.Multimedia);
 
-        return deviceEnumerator.GetDefaultAudioEndpoint(EDataFlow.Render, ERole.Multimedia);
-    }
-
-    private static AudioClient GetAudioClient(IMMDevice device)
-    {
         var audioClientId = new Guid(IAudioClient.IID);
         var audioClient = device.Activate(ref audioClientId, ClsCtx.All, IntPtr.Zero);
 
-        return new AudioClient(audioClient);
+        return audioClient;
     }
 
-    private static WaveFormatExtensible GetFormat(int sampleRate, int channelCount)
+    private void Initialize(int sampleRate, int channelCount, TimeSpan bufferDuration)
+    {
+        var waveFormat = GetWaveFormat(sampleRate, channelCount);
+
+        var streamFlags =
+            AudioClientStreamFlags.EventCallback |
+            AudioClientStreamFlags.NoPersist |
+            AudioClientStreamFlags.AutoConvertPCM;
+
+        var audioSessionId = Guid.Empty;
+
+        _audioClient.Initialize(
+            AudioClientShareMode.Shared,
+            streamFlags,
+            (long)(bufferDuration.TotalNanoseconds / 100), // 100ns units
+            0,
+            waveFormat,
+            ref audioSessionId);
+
+
+        _audioClient.SetEventHandle(_waitHandles[0].SafeWaitHandle.DangerousGetHandle());
+    }
+
+    private static WaveFormatExtensible GetWaveFormat(int sampleRate, int channelCount)
     {
         var blockAlign = 32 * channelCount / 8;
 
@@ -51,10 +79,10 @@ internal class CoreAudioPlayer : IAudioPlayer
             WaveFormat = new WaveFormat
             {
                 FormatTag = WaveFormatTag.Extensible,
-                Channels = (ushort)channelCount,
-                SamplesPerSecond = (uint)sampleRate,
-                AverageBytesPerSecond = (uint)(sampleRate * blockAlign),
-                BlockAlign = (ushort)blockAlign,
+                Channels = (short)channelCount,
+                SamplesPerSecond = sampleRate,
+                AverageBytesPerSecond = sampleRate * blockAlign,
+                BlockAlign = (short)blockAlign,
                 BitsPerSample = 32,
                 ExtraSize = 22
             },
@@ -62,16 +90,6 @@ internal class CoreAudioPlayer : IAudioPlayer
             ChannelMask = ChannelMask.Stereo,
             SubFormat = SubFormat.IeeeFloat
         };
-    }
-
-    private void Initialize(WaveFormatExtensible format)
-    {
-        _audioClient.Initialize(
-            AudioClientShareMode.Shared,
-            AudioClientStreamFlags.EventCallback | AudioClientStreamFlags.NoPersist | AudioClientStreamFlags.AutoConvertPCM,
-            TimeSpan.FromMilliseconds(100), format);
-
-        _audioClient.SetEventHandle(_frameEventWaitHandle.SafeWaitHandle.DangerousGetHandle());
     }
 
     public void Start()
@@ -84,26 +102,49 @@ internal class CoreAudioPlayer : IAudioPlayer
         _audioClient.Stop();
     }
 
-    public Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken = default)
+    public async Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var sourceBuffer = new float[_bufferFrameCount * _frameSize];
+
+        await Task.Run(async () => 
+        {
+            var firstFrame = true;
+
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!firstFrame)
+                {
+                    await Task.Delay(_halfBufferDuration, cancellationToken);
+                }
+                
+                WaitHandle.WaitAny(_waitHandles);
+
+                var paddingFrameCount = _audioClient.GetCurrentPadding();
+                var framesAvailable = _bufferFrameCount - paddingFrameCount;
+
+                var samplesCount = reader.ReadFrames(sourceBuffer, framesAvailable);
+                if (samplesCount == 0)
+                {
+                    break;
+                }
+
+                var audioBuffer = _renderClient.GetBuffer(framesAvailable);
+
+                Marshal.Copy(sourceBuffer, 0, audioBuffer, samplesCount);
+
+                _renderClient.ReleaseBuffer(framesAvailable, AudioClientBufferFlags.None);
+
+                firstFrame = false;
+            }
+        }, cancellationToken);
+
+        await Task.Delay(_halfBufferDuration, cancellationToken);
     }
-
-    public Task Enqueue(float[] pcmData, CancellationToken cancellationToken = default)
-    {
-        var waitHandles = new WaitHandle[] { _frameEventWaitHandle };
-
-        WaitHandle.WaitAny(waitHandles);
-
-        var buffer = _renderClient.GetBuffer(BufferSizeInBytes);
-
-        return Task.CompletedTask;
-    }
-
-    public int BufferSizeInBytes { get; }
 
     public void Dispose()
     {
-        _frameEventWaitHandle.Dispose();
+        _waitHandles[0].Dispose();
     }
 }

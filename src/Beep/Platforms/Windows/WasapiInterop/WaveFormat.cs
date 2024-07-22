@@ -8,15 +8,15 @@ internal struct WaveFormat
 {
     internal WaveFormatTag FormatTag;
 
-    internal ushort Channels;
+    internal short Channels;
 
-    internal uint SamplesPerSecond;
+    internal int SamplesPerSecond;
 
-    internal uint AverageBytesPerSecond;
+    internal int AverageBytesPerSecond;
 
-    internal ushort BlockAlign;
+    internal short BlockAlign;
 
-    internal ushort BitsPerSample;
+    internal short BitsPerSample;
 
-    internal ushort ExtraSize;
+    internal short ExtraSize;
 }

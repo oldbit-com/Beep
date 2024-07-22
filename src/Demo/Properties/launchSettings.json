@@ -2,6 +2,7 @@
   "profiles": {
     "Demo": {
       "commandName": "Project",
+      "commandLineArgs": "-f f32le",
       "nativeDebugging": true
     }
   }
