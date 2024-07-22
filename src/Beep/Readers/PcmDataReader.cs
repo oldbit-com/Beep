@@ -1,16 +1,16 @@
 using OldBit.Beep.Extensions;
-using OldBit.Beep.Helpers;
 
 namespace OldBit.Beep.Readers;
 
 /// <summary>
-/// Reads PCM audio data from a stream. It converts the data to a float values.
+/// Reads PCM audio data from a stream. It converts the data to 32-bit float values
+/// which is the format internally used by the platform's audio system implementation.
 /// </summary>
 internal class PcmDataReader : IDisposable
 {
     private readonly Stream _stream;
     private readonly AudioFormat _format;
-    private readonly int _byteSize;
+    private readonly int _formatByteSize;
     private readonly int _channelCount;
     private bool _disposed;
 
@@ -20,14 +20,14 @@ internal class PcmDataReader : IDisposable
     {
         _stream = input;
         _format = format;
-        _byteSize = format.GetByteSize();
+        _formatByteSize = format.GetByteSize();
         _channelCount = channelCount;
     }
 
     // TODO: Unify the ReadFrames methods
     internal int ReadFrames(Span<float> destination)
     {
-        var source = new byte[destination.Length * _byteSize];
+        var source = new byte[destination.Length * _formatByteSize];
 
         return ReadBuffer(source, destination);
     }
@@ -35,7 +35,7 @@ internal class PcmDataReader : IDisposable
     // TODO: Unify the ReadFrames methods
     internal int ReadFrames(Span<float> destination, int frameCount)
     {
-        var source = new byte[frameCount * _byteSize * _channelCount];
+        var source = new byte[frameCount * _formatByteSize * _channelCount];
 
         return ReadBuffer(source, destination);
     }
@@ -43,18 +43,16 @@ internal class PcmDataReader : IDisposable
     private int ReadBuffer(byte[] source, Span<float> destination)
     {
         var count = _stream.Read(source, 0, source.Length);
+        count -= count % _formatByteSize;     // Ensure we have a whole number of samples
 
         if (count == 0)
         {
             return 0;
         }
 
-        // Ensure we have a whole number of samples
-        count -= count % _byteSize;
-       
         var offset = 0;
-        
-        for (var i = 0; i < count; i += _byteSize)
+
+        for (var i = 0; i < count; i += _formatByteSize)
         {
             destination[offset++] = _format switch
             {

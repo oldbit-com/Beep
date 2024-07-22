@@ -15,7 +15,7 @@ internal class CoreAudioPlayer : IAudioPlayer
 
     private readonly IAudioClient _audioClient;
     private readonly IAudioRenderClient _renderClient;
-    private readonly EventWaitHandle[] _waitHandles = [new(false, EventResetMode.AutoReset)];
+    private readonly WaitHandle[] _waitHandles = [new EventWaitHandle(false, EventResetMode.AutoReset)];
     private readonly int _bufferFrameCount;
     private readonly int _frameSize;
     private readonly TimeSpan _halfBufferDuration;
@@ -106,7 +106,7 @@ internal class CoreAudioPlayer : IAudioPlayer
     {
         var sourceBuffer = new float[_bufferFrameCount * _frameSize];
 
-        await Task.Run(async () => 
+        await Task.Run(async () =>
         {
             var firstFrame = true;
 
@@ -118,7 +118,7 @@ internal class CoreAudioPlayer : IAudioPlayer
                 {
                     await Task.Delay(_halfBufferDuration, cancellationToken);
                 }
-                
+
                 WaitHandle.WaitAny(_waitHandles);
 
                 var paddingFrameCount = _audioClient.GetCurrentPadding();
