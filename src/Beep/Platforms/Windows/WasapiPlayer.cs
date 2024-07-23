@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using OldBit.Beep.Helpers;
@@ -46,19 +45,17 @@ internal class CoreAudioPlayer : IAudioPlayer
     private void Initialize(int sampleRate, int channelCount, int bufferSizeInBytes)
     {
         var waveFormat = GetWaveFormat(sampleRate, channelCount);
-        var bufferSize100ns = CalculateBufferSize100ns(sampleRate, channelCount, bufferSizeInBytes);
+        var bufferSize100Ns = CalculateBufferSize100Ns(sampleRate, bufferSizeInBytes);
 
-        var streamFlags =
-            AudioClientStreamFlags.EventCallback |
-            AudioClientStreamFlags.NoPersist |
-            AudioClientStreamFlags.AutoConvertPCM;
-
+        const AudioClientStreamFlags streamFlags = AudioClientStreamFlags.EventCallback |
+                                                   AudioClientStreamFlags.NoPersist |
+                                                   AudioClientStreamFlags.AutoConvertPCM;
         var audioSessionId = Guid.Empty;
 
         _audioClient.Initialize(
             AudioClientShareMode.Shared,
             streamFlags,
-            (long)bufferSize100ns,
+            bufferSize100Ns,
             0,
             waveFormat,
             ref audioSessionId);
@@ -66,10 +63,10 @@ internal class CoreAudioPlayer : IAudioPlayer
         _audioClient.SetEventHandle(_bufferReadyEvent.SafeWaitHandle.DangerousGetHandle());
     }
 
-    private int CalculateBufferSize100ns(int sampleRate, int channelCount, int bufferSizeInBytes)
+    private int CalculateBufferSize100Ns(int sampleRate, int bufferSizeInBytes)
     {
         var bufferSizeInFrames = bufferSizeInBytes / _frameSize;
-        
+
         return RefTimesPerSecond * bufferSizeInFrames / sampleRate;
     }
 
@@ -141,7 +138,7 @@ internal class CoreAudioPlayer : IAudioPlayer
         {
             _audioClient.Stop();
             _audioClient.Reset();
-            
+
             throw;
         }
         finally
