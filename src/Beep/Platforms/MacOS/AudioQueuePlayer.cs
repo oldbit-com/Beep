@@ -17,6 +17,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
     private readonly IntPtr _audioQueue;
     private readonly List<IntPtr> _allocatedAudioBuffers;
     private readonly Channel<IntPtr> _availableAudioBuffers;
+    private readonly AsyncPauseResume _asyncPauseResume = new();
     private GCHandle _gch;
 
     internal AudioQueuePlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
@@ -54,6 +55,8 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
             {
                 while (true)
                 {
+                    await _asyncPauseResume.WaitIfPausedAsync(cancellationToken);
+
                     cancellationToken.ThrowIfCancellationRequested();
 
                     var samplesCount = reader.ReadFrames(sourceBuffer);
@@ -77,6 +80,10 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
             StopAudioQueue();
         }
     }
+
+    public void Pause() => _asyncPauseResume.Pause();
+
+    public void Resume() => _asyncPauseResume.Resume();
 
     private async Task Enqueue(float[] pcmData, int length,  CancellationToken cancellationToken)
     {

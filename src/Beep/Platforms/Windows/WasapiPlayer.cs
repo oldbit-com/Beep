@@ -17,6 +17,7 @@ internal class CoreAudioPlayer : IAudioPlayer
     private readonly int _bufferFrameCount;
     private readonly int _frameSize;
     private readonly AutoResetEvent _bufferReadyEvent = new(false);
+    private readonly AsyncPauseResume _asyncPauseResume = new();
 
     internal CoreAudioPlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
@@ -101,10 +102,12 @@ internal class CoreAudioPlayer : IAudioPlayer
 
         try
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 while (true)
                 {
+                    await _asyncPauseResume.WaitIfPausedAsync(cancellationToken);
+
                     cancellationToken.ThrowIfCancellationRequested();
 
                     _bufferReadyEvent.WaitOne(waitTimeOut, false);
@@ -139,6 +142,10 @@ internal class CoreAudioPlayer : IAudioPlayer
             _audioClient.Reset();
         }
     }
+
+    public void Pause() => _asyncPauseResume.Pause();
+
+    public void Resume() => _asyncPauseResume.Resume();
 
     public void Dispose()
     {

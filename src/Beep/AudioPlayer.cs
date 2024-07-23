@@ -85,6 +85,16 @@ public class AudioPlayer : IDisposable
         await _audioPlayer.PlayAsync(pcmDataReader, cancellationToken);
     }
 
+    /// <summary>
+    /// Pauses the audio player.
+    /// </summary>
+    public void Pause() => _audioPlayer.Pause();
+
+    /// <summary>
+    /// Resumes the audio player.
+    /// </summary>
+    public void Resume() => _audioPlayer.Resume();
+
     public void Dispose()
     {
         _audioPlayer.Dispose();
