@@ -65,22 +65,6 @@ public class AudioPlayer : IDisposable
     }
 
     /// <summary>
-    /// Starts the audio player.
-    /// </summary>
-    public void Start()
-    {
-        _audioPlayer.Start();
-    }
-
-    /// <summary>
-    /// Stops the audio player.
-    /// </summary>
-    public void Stop()
-    {
-        _audioPlayer.Stop();
-    }
-
-    /// <summary>
     /// Plays the audio data.
     /// </summary>
     /// <param name="data">The audio data to play. This is an enumerable collection of bytes.</param>

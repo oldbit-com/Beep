@@ -18,7 +18,6 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
     private readonly List<IntPtr> _allocatedAudioBuffers;
     private readonly Channel<IntPtr> _availableAudioBuffers;
     private GCHandle _gch;
-    private bool _isPlayerQueueStarted;
 
     internal AudioQueuePlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
@@ -43,58 +42,39 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         }
     }
 
-    public void Start()
-    {
-        if (_isPlayerQueueStarted)
-        {
-            return;
-        }
-
-        unsafe
-        {
-            var status = AudioToolbox.AudioQueueStart(_audioQueue, null);
-
-            if (status != 0)
-            {
-                throw new AudioPlayerException($"Failed to start audio queue: {status}", status);
-            }
-        }
-
-        _isPlayerQueueStarted = true;
-    }
-
-    public void Stop()
-    {
-        if (!_isPlayerQueueStarted)
-        {
-            return;
-        }
-
-        AudioToolbox.AudioQueueStop(_audioQueue, true);
-
-        _isPlayerQueueStarted = false;
-    }
-
     public async Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken)
     {
-        if (_isPlayerQueueStarted == false)
+        StartAudioQueue();
+
+        var sourceBuffer = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
+
+        try
         {
-            throw new InvalidOperationException("The audio player is not started. Use the Start method to start the player.");
-        }
-
-        var pcmData = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
-
-        while (true)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var length = reader.ReadFrames(pcmData);
-            if (length == 0)
+            await Task.Run(async () =>
             {
-                break;
-            }
+                while (true)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
 
-            await Enqueue(pcmData, length, cancellationToken);
+                    var samplesCount = reader.ReadFrames(sourceBuffer);
+                    if (samplesCount == 0)
+                    {
+                        break;
+                    }
+
+                    await Enqueue(sourceBuffer, samplesCount, cancellationToken);
+                }
+            }, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            StopAudioQueue();
+
+            throw;
+        }
+        finally
+        {
+            StopAudioQueue();
         }
     }
 
@@ -116,6 +96,24 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
                 throw new AudioPlayerException($"Failed to enqueue buffer: {status}", status);
             }
         }
+    }
+
+    private void StartAudioQueue()
+    {
+        unsafe
+        {
+            var status = AudioToolbox.AudioQueueStart(_audioQueue, null);
+
+            if (status != 0)
+            {
+                throw new AudioPlayerException($"Failed to start audio queue: {status}", status);
+            }
+        }
+    }
+
+    private void StopAudioQueue()
+    {
+        AudioToolbox.AudioQueueStop(_audioQueue, true);
     }
 
     private static AudioStreamBasicDescription CreateAudioStreamBasicDescription(int sampleRate, int channelCount) => new()
@@ -181,11 +179,6 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         if (_audioQueue == IntPtr.Zero)
         {
             return;
-        }
-
-        if (_isPlayerQueueStarted)
-        {
-            Stop();
         }
 
         foreach (var buffer in _allocatedAudioBuffers)

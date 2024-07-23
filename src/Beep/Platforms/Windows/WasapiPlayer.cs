@@ -92,14 +92,6 @@ internal class CoreAudioPlayer : IAudioPlayer
         };
     }
 
-    public void Start()
-    {
-    }
-
-    public void Stop()
-    {
-    }
-
     public async Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken)
     {
         _audioClient.Start();
