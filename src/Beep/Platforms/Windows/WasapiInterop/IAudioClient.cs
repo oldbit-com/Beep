@@ -12,11 +12,11 @@ internal partial interface IAudioClient
 
     void Initialize(AudioClientShareMode shareMode, AudioClientStreamFlags streamFlags, long hnsBufferDuration, long hnsPeriodicity, WaveFormatExtensible pFormat, ref Guid audioSessionGuid);
 
-    uint GetBufferSize();
+    int GetBufferSize();
 
     long GetStreamLatency();
 
-    uint GetCurrentPadding();
+    int GetCurrentPadding();
 
     [PreserveSig]
     int IsFormatSupported(AudioClientShareMode shareMode, WaveFormatExtensible pFormat, IntPtr ppClosestMatch);

@@ -13,8 +13,11 @@ public class PlayerOptions
     public int BufferSizeInBytes { get; set; } = 1024;
 
     /// <summary>
-    /// Gets or sets the maximum number of audio buffers. Default is 4.
+    /// Gets or sets the maximum number of audio buffers. Default is 4. This setting applies to macOS only.
     /// </summary>
+    /// <remarks>
+    /// This setting applies to AudioToolbox (macOS) only.
+    /// </remarks>
     public int MaxBuffers { get; set; } = 4;
 
     internal void ThrowIfNotValid()

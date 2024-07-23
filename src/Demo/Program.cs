@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.Diagnostics;
 using Demo;
 using Demo.Generator;
 using OldBit.Beep;
@@ -49,10 +50,11 @@ rootCommand.SetHandler(async (audioFormat, sampleRate, channels, waveType, volum
     };
     var parsedWaveType = Enum.Parse<WaveType>(waveType, ignoreCase: true);
     var demoPlayer = new DemoPlayer(parsedAudioFormat, sampleRate, channels, parsedWaveType, volume);
+    var timer = Stopwatch.StartNew();
 
     await demoPlayer.PlayAsync();
 
-    Console.WriteLine("Finished playing audio.");
+    Console.WriteLine($"Finished playing audio in {timer.ElapsedMilliseconds}ms.");
 
 }, audioFormatOption, sampleRateOption, channelsOption, waveOption, volumeOption);
 

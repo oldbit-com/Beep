@@ -18,7 +18,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
     private readonly List<IntPtr> _allocatedAudioBuffers;
     private readonly Channel<IntPtr> _availableAudioBuffers;
     private GCHandle _gch;
-    private bool _isStarted;
+    private bool _isPlayerQueueStarted;
 
     internal AudioQueuePlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
@@ -45,7 +45,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
 
     public void Start()
     {
-        if (_isStarted)
+        if (_isPlayerQueueStarted)
         {
             return;
         }
@@ -60,24 +60,24 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
             }
         }
 
-        _isStarted = true;
+        _isPlayerQueueStarted = true;
     }
 
     public void Stop()
     {
-        if (!_isStarted)
+        if (!_isPlayerQueueStarted)
         {
             return;
         }
 
         AudioToolbox.AudioQueueStop(_audioQueue, true);
 
-        _isStarted = false;
+        _isPlayerQueueStarted = false;
     }
 
     public async Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken)
     {
-        if (_isStarted == false)
+        if (_isPlayerQueueStarted == false)
         {
             throw new InvalidOperationException("The audio player is not started. Use the Start method to start the player.");
         }
@@ -88,7 +88,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var length = reader.Read(pcmData);
+            var length = reader.ReadFrames(pcmData);
             if (length == 0)
             {
                 break;
@@ -183,7 +183,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
             return;
         }
 
-        if (_isStarted)
+        if (_isPlayerQueueStarted)
         {
             Stop();
         }

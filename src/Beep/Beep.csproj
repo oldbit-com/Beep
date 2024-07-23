@@ -19,8 +19,4 @@
         <InternalsVisibleTo Include="OldBit.Beep.Tests" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Platforms\" />
-    </ItemGroup>
-
 </Project>

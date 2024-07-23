@@ -3,48 +3,67 @@ using OldBit.Beep.Extensions;
 namespace OldBit.Beep.Readers;
 
 /// <summary>
-/// Reads PCM audio data from a stream. It converts the data to a float array.
+/// Reads PCM audio data from a stream. It converts the data to 32-bit float values
+/// which is the format internally used by the platform's audio system implementation.
 /// </summary>
 internal class PcmDataReader : IDisposable
 {
     private readonly Stream _stream;
     private readonly AudioFormat _format;
+    private readonly int _formatByteSize;
+    private readonly int _channelCount;
     private bool _disposed;
 
     internal int Volume { get; set; }
 
-    internal PcmDataReader(Stream input, AudioFormat format)
+    internal PcmDataReader(Stream input, AudioFormat format, int channelCount)
     {
         _stream = input;
         _format = format;
+        _formatByteSize = format.GetByteSize();
+        _channelCount = channelCount;
     }
 
-    internal int Read(Span<float> buffer)
+    // TODO: Unify the ReadFrames methods
+    internal int ReadFrames(Span<float> destination)
     {
-        var byteSize = _format.GetByteSize();
-        var byteBuffer = new byte[buffer.Length * byteSize];
-        var bytesRead = _stream.Read(byteBuffer, 0, buffer.Length * byteSize);
+        var source = new byte[destination.Length * _formatByteSize];
 
-        bytesRead -= bytesRead % byteSize; // Ensure we have a whole number of samples
+        return ReadBuffer(source, destination);
+    }
 
-        if (bytesRead == 0)
+    // TODO: Unify the ReadFrames methods
+    internal int ReadFrames(Span<float> destination, int frameCount)
+    {
+        var source = new byte[frameCount * _formatByteSize * _channelCount];
+
+        return ReadBuffer(source, destination);
+    }
+
+    private int ReadBuffer(byte[] source, Span<float> destination)
+    {
+        var count = _stream.Read(source, 0, source.Length);
+        count -= count % _formatByteSize;     // Ensure we have a whole number of samples
+
+        if (count == 0)
         {
             return 0;
         }
 
         var offset = 0;
-        for (var i = 0; i < bytesRead; i += byteSize)
+
+        for (var i = 0; i < count; i += _formatByteSize)
         {
-            buffer[offset++] = _format switch
+            destination[offset++] = _format switch
             {
                 AudioFormat.Unsigned8Bit =>
-                   VolumeAdjuster.Adjust(byteBuffer[i], Volume) / 128f - 1,
+                   VolumeAdjuster.Adjust(source[i], Volume) / 128f - 1,
 
                 AudioFormat.Signed16BitIntegerLittleEndian =>
-                    VolumeAdjuster.Adjust(BitConverter.ToInt16(byteBuffer, i), Volume) / 32768f,
+                    VolumeAdjuster.Adjust(BitConverter.ToInt16(source, i), Volume) / 32768f,
 
                 AudioFormat.Float32BitLittleEndian =>
-                    VolumeAdjuster.Adjust(BitConverter.ToSingle(byteBuffer, i), Volume),
+                    VolumeAdjuster.Adjust(BitConverter.ToSingle(source, i), Volume),
 
                 _ => throw new ArgumentException($"Invalid audio format: {_format}.")
             };
