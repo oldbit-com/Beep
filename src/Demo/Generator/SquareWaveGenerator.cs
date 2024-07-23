@@ -25,6 +25,7 @@ public class SquareWaveGenerator(AudioFormat format, int sampleRate = 44100, int
                     {
                         yield return (byte)sampleValue;
                     }
+
                     break;
 
                 case AudioFormat.Signed16BitIntegerLittleEndian:
@@ -34,6 +35,7 @@ public class SquareWaveGenerator(AudioFormat format, int sampleRate = 44100, int
                         yield return (byte)sampleValue;
                         yield return (byte)((int)sampleValue >> 8);
                     }
+
                     break;
 
                 case AudioFormat.Float32BitLittleEndian:
@@ -47,6 +49,7 @@ public class SquareWaveGenerator(AudioFormat format, int sampleRate = 44100, int
                         yield return bytes[2];
                         yield return bytes[3];
                     }
+
                     break;
             }
         }
