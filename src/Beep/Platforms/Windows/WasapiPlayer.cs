@@ -129,13 +129,6 @@ internal class CoreAudioPlayer : IAudioPlayer
                 }
             }, cancellationToken);
         }
-        catch (OperationCanceledException)
-        {
-            _audioClient.Stop();
-            _audioClient.Reset();
-
-            throw;
-        }
         finally
         {
             _audioClient.Stop();

@@ -69,12 +69,6 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
                 }
             }, cancellationToken);
         }
-        catch (OperationCanceledException)
-        {
-            StopAudioQueue();
-
-            throw;
-        }
         finally
         {
             StopAudioQueue();
