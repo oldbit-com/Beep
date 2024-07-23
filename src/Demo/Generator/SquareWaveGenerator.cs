@@ -20,7 +20,7 @@ public class SquareWaveGenerator(AudioFormat format, int sampleRate = 44100, int
             switch (format)
             {
                 case AudioFormat.Unsigned8Bit:
-                    sampleValue = highAmplitude ? 0xFF : 0x00;
+                    sampleValue = highAmplitude ? 0xCF : 0x30;
                     for (var channel = 0; channel < channelCount; channel++)
                     {
                         yield return (byte)sampleValue;
@@ -28,7 +28,7 @@ public class SquareWaveGenerator(AudioFormat format, int sampleRate = 44100, int
                     break;
 
                 case AudioFormat.Signed16BitIntegerLittleEndian:
-                    sampleValue = highAmplitude ? 32767 : -32767;
+                    sampleValue = highAmplitude ? 24000 : -24000;
                     for (var channel = 0; channel < channelCount; channel++)
                     {
                         yield return (byte)sampleValue;
@@ -37,7 +37,7 @@ public class SquareWaveGenerator(AudioFormat format, int sampleRate = 44100, int
                     break;
 
                 case AudioFormat.Float32BitLittleEndian:
-                    sampleValue = highAmplitude ? 1f : -1f;
+                    sampleValue = highAmplitude ? .7f : -.7f;
                     var bytes = BitConverter.GetBytes((float)sampleValue);
 
                     for (var channel = 0; channel < channelCount; channel++)

@@ -1,5 +1,6 @@
 using Demo.Generator;
 using OldBit.Beep;
+using System.Threading;
 
 namespace Demo;
 
@@ -34,7 +35,9 @@ public class DemoPlayer(AudioFormat audioFormat, int sampleRate, int channelCoun
         audioPlayer.Volume = volume;
 
         audioPlayer.Start();
+
         await audioPlayer.PlayAsync(audioData);
+
         audioPlayer.Stop();
     }
 }

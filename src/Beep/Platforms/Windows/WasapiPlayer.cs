@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using OldBit.Beep.Helpers;
@@ -11,26 +12,21 @@ namespace OldBit.Beep.Platforms.Windows;
 internal class CoreAudioPlayer : IAudioPlayer
 {
     private const int RefTimesPerSecond = 10_000_000;
-    private const int RefTimesPerMillisecond = 10_000;
 
     private readonly IAudioClient _audioClient;
     private readonly IAudioRenderClient _renderClient;
-    private readonly WaitHandle[] _waitHandles = [new EventWaitHandle(false, EventResetMode.AutoReset)];
     private readonly int _bufferFrameCount;
     private readonly int _frameSize;
-    private readonly TimeSpan _halfBufferDuration;
+    private readonly AutoResetEvent _bufferReadyEvent = new(false);
 
     internal CoreAudioPlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
         _audioClient = Activate();
-
-        Initialize(sampleRate, channelCount, playerOptions.BufferDuration);
-
-        _bufferFrameCount = _audioClient.GetBufferSize();
         _frameSize = channelCount * FloatType.SizeInBytes;
 
-        var bufferDuration = (double)RefTimesPerSecond * _bufferFrameCount / sampleRate;
-        _halfBufferDuration = TimeSpan.FromMilliseconds(bufferDuration / RefTimesPerMillisecond / 2);
+        Initialize(sampleRate, channelCount, playerOptions.BufferSizeInBytes);
+
+        _bufferFrameCount = _audioClient.GetBufferSize();
 
         var audioRenderClientId = new Guid(IAudioRenderClient.IID);
         _renderClient = _audioClient.GetService(ref audioRenderClientId);
@@ -47,9 +43,10 @@ internal class CoreAudioPlayer : IAudioPlayer
         return audioClient;
     }
 
-    private void Initialize(int sampleRate, int channelCount, TimeSpan bufferDuration)
+    private void Initialize(int sampleRate, int channelCount, int bufferSizeInBytes)
     {
         var waveFormat = GetWaveFormat(sampleRate, channelCount);
+        var bufferSize100ns = CalculateBufferSize100ns(sampleRate, channelCount, bufferSizeInBytes);
 
         var streamFlags =
             AudioClientStreamFlags.EventCallback |
@@ -61,13 +58,19 @@ internal class CoreAudioPlayer : IAudioPlayer
         _audioClient.Initialize(
             AudioClientShareMode.Shared,
             streamFlags,
-            (long)(bufferDuration.TotalNanoseconds / 100), // 100ns units
+            (long)bufferSize100ns,
             0,
             waveFormat,
             ref audioSessionId);
 
+        _audioClient.SetEventHandle(_bufferReadyEvent.SafeWaitHandle.DangerousGetHandle());
+    }
 
-        _audioClient.SetEventHandle(_waitHandles[0].SafeWaitHandle.DangerousGetHandle());
+    private int CalculateBufferSize100ns(int sampleRate, int channelCount, int bufferSizeInBytes)
+    {
+        var bufferSizeInFrames = bufferSizeInBytes / _frameSize;
+        
+        return RefTimesPerSecond * bufferSizeInFrames / sampleRate;
     }
 
     private static WaveFormatExtensible GetWaveFormat(int sampleRate, int channelCount)
@@ -94,57 +97,62 @@ internal class CoreAudioPlayer : IAudioPlayer
 
     public void Start()
     {
-        _audioClient.Start();
     }
 
     public void Stop()
     {
-        _audioClient.Stop();
     }
 
     public async Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken)
     {
+        _audioClient.Start();
+
         var sourceBuffer = new float[_bufferFrameCount * _frameSize];
+        var waitTimeOut = TimeSpan.FromSeconds(2);
 
-        await Task.Run(async () =>
+        try
         {
-            var firstFrame = true;
-
-            while (true)
+            await Task.Run(() =>
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (!firstFrame)
+                while (true)
                 {
-                    await Task.Delay(_halfBufferDuration, cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    _bufferReadyEvent.WaitOne(waitTimeOut, false);
+
+                    var paddingFrameCount = _audioClient.GetCurrentPadding();
+                    var framesAvailable = _bufferFrameCount - paddingFrameCount;
+
+                    var samplesCount = reader.ReadFrames(sourceBuffer, framesAvailable);
+                    if (samplesCount == 0)
+                    {
+                        break;
+                    }
+
+                    var audioBuffer = _renderClient.GetBuffer(framesAvailable);
+
+                    Marshal.Copy(sourceBuffer, 0, audioBuffer, samplesCount);
+
+                    _renderClient.ReleaseBuffer(framesAvailable, AudioClientBufferFlags.None);
                 }
-
-                WaitHandle.WaitAny(_waitHandles);
-
-                var paddingFrameCount = _audioClient.GetCurrentPadding();
-                var framesAvailable = _bufferFrameCount - paddingFrameCount;
-
-                var samplesCount = reader.ReadFrames(sourceBuffer, framesAvailable);
-                if (samplesCount == 0)
-                {
-                    break;
-                }
-
-                var audioBuffer = _renderClient.GetBuffer(framesAvailable);
-
-                Marshal.Copy(sourceBuffer, 0, audioBuffer, samplesCount);
-
-                _renderClient.ReleaseBuffer(framesAvailable, AudioClientBufferFlags.None);
-
-                firstFrame = false;
-            }
-        }, cancellationToken);
-
-        await Task.Delay(_halfBufferDuration, cancellationToken);
+            }, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            _audioClient.Stop();
+            _audioClient.Reset();
+            
+            throw;
+        }
+        finally
+        {
+            _audioClient.Stop();
+            _audioClient.Reset();
+        }
     }
 
     public void Dispose()
     {
-        _waitHandles[0].Dispose();
+        _bufferReadyEvent.Dispose();
     }
 }
