@@ -78,7 +78,7 @@ public class AudioPlayer : IDisposable
     public async Task PlayAsync(Stream stream, CancellationToken cancellationToken = default)
     {
         using var pcmDataReader = new PcmDataReader(stream, _audioFormat);
-        pcmDataReader.Volume = _volume;
+        pcmDataReader.VolumeFilter.Volume = _volume;
 
         await _audioPlayer.PlayAsync(pcmDataReader, cancellationToken);
     }

@@ -1,4 +1,5 @@
 using OldBit.Beep.Extensions;
+using OldBit.Beep.Filters;
 
 namespace OldBit.Beep.Readers;
 
@@ -13,7 +14,7 @@ internal class PcmDataReader : IDisposable
     private readonly int _sampleSizeInBytes;
     private bool _disposed;
 
-    internal int Volume { get; set; }
+    internal VolumeFilter VolumeFilter { get; } = new();
 
     internal PcmDataReader(Stream input, AudioFormat audioFormat)
     {
@@ -46,13 +47,13 @@ internal class PcmDataReader : IDisposable
             destination[offset++] = _audioFormat switch
             {
                 AudioFormat.Unsigned8Bit =>
-                   VolumeAdjuster.Adjust(source[i], Volume) / 128f - 1,
+                    VolumeFilter.Apply(source[i]) / 128f - 1,
 
                 AudioFormat.Signed16BitIntegerLittleEndian =>
-                    VolumeAdjuster.Adjust(BitConverter.ToInt16(source, i), Volume) / 32768f,
+                    VolumeFilter.Apply(BitConverter.ToInt16(source, i)) / 32768f,
 
                 AudioFormat.Float32BitLittleEndian =>
-                    VolumeAdjuster.Adjust(BitConverter.ToSingle(source, i), Volume),
+                    VolumeFilter.Apply(BitConverter.ToSingle(source, i)),
 
                 _ => throw new ArgumentException($"Invalid audio format: {_audioFormat}.")
             };
