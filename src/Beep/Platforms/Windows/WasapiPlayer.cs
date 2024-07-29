@@ -15,6 +15,7 @@ internal class CoreAudioPlayer : IAudioPlayer
     private readonly IAudioClient _audioClient;
     private readonly IAudioRenderClient _renderClient;
     private readonly int _bufferFrameCount;
+    private readonly int _channelCount;
     private readonly int _frameSize;
     private readonly AutoResetEvent _bufferReadyEvent = new(false);
     private readonly AsyncPauseResume _asyncPauseResume = new();
@@ -23,6 +24,7 @@ internal class CoreAudioPlayer : IAudioPlayer
     {
         _audioClient = Activate();
         _frameSize = channelCount * FloatType.SizeInBytes;
+        _channelCount = channelCount;
 
         Initialize(sampleRate, channelCount, playerOptions.BufferSizeInBytes);
 
@@ -97,7 +99,7 @@ internal class CoreAudioPlayer : IAudioPlayer
     {
         _audioClient.Start();
 
-        var sourceBuffer = new float[_bufferFrameCount * _frameSize];
+        var audioData = new float[_bufferFrameCount * _frameSize];
         var waitTimeOut = TimeSpan.FromSeconds(2);
 
         try
@@ -115,15 +117,15 @@ internal class CoreAudioPlayer : IAudioPlayer
                     var paddingFrameCount = _audioClient.GetCurrentPadding();
                     var framesAvailable = _bufferFrameCount - paddingFrameCount;
 
-                    var samplesCount = reader.ReadFrames(sourceBuffer, framesAvailable);
-                    if (samplesCount == 0)
+                    var audioDataLength = reader.ReadFrames(audioData, framesAvailable * _channelCount);
+                    if (audioDataLength == 0)
                     {
                         break;
                     }
 
                     var audioBuffer = _renderClient.GetBuffer(framesAvailable);
 
-                    Marshal.Copy(sourceBuffer, 0, audioBuffer, samplesCount);
+                    Marshal.Copy(audioData, 0, audioBuffer, audioDataLength);
 
                     _renderClient.ReleaseBuffer(framesAvailable, AudioClientBufferFlags.None);
                 }

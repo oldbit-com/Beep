@@ -47,7 +47,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
     {
         StartAudioQueue();
 
-        var sourceBuffer = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
+        var audioData = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
 
         try
         {
@@ -59,13 +59,13 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var samplesCount = reader.ReadFrames(sourceBuffer);
-                    if (samplesCount == 0)
+                    var audioDataLength = reader.ReadFrames(audioData, audioData.Length);
+                    if (audioDataLength == 0)
                     {
                         break;
                     }
 
-                    await Enqueue(sourceBuffer, samplesCount, cancellationToken);
+                    await Enqueue(audioData, audioDataLength, cancellationToken);
                 }
             }, cancellationToken);
         }
@@ -79,7 +79,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
 
     public void Resume() => _asyncPauseResume.Resume();
 
-    private async Task Enqueue(float[] pcmData, int length,  CancellationToken cancellationToken)
+    private async Task Enqueue(float[] audioData, int length,  CancellationToken cancellationToken)
     {
         var buffer = await _availableAudioBuffers.Reader.ReadAsync(cancellationToken);
 
@@ -88,7 +88,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
             var audioQueueBuffer = (AudioQueueBuffer*)buffer;
             audioQueueBuffer->AudioDataByteSize = (uint)(length * FloatType.SizeInBytes);
 
-            Marshal.Copy(pcmData, 0, audioQueueBuffer->AudioData, length);
+            Marshal.Copy(audioData, 0, audioQueueBuffer->AudioData, length);
 
             var status = AudioToolbox.AudioQueueEnqueueBuffer(_audioQueue, audioQueueBuffer, 0, null);
 

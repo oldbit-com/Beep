@@ -9,33 +9,22 @@ namespace OldBit.Beep.Readers;
 internal class PcmDataReader : IDisposable
 {
     private readonly Stream _stream;
-    private readonly AudioFormat _format;
-    private readonly int _formatByteSize;
-    private readonly int _channelCount;
+    private readonly AudioFormat _audioFormat;
+    private readonly int _sampleSizeInBytes;
     private bool _disposed;
 
     internal int Volume { get; set; }
 
-    internal PcmDataReader(Stream input, AudioFormat format, int channelCount)
+    internal PcmDataReader(Stream input, AudioFormat audioFormat)
     {
         _stream = input;
-        _format = format;
-        _formatByteSize = format.GetByteSize();
-        _channelCount = channelCount;
+        _audioFormat = audioFormat;
+        _sampleSizeInBytes = audioFormat.GetByteSize();
     }
 
-    // TODO: Unify the ReadFrames methods
-    internal int ReadFrames(Span<float> destination)
-    {
-        var source = new byte[destination.Length * _formatByteSize];
-
-        return ReadBuffer(source, destination);
-    }
-
-    // TODO: Unify the ReadFrames methods
     internal int ReadFrames(Span<float> destination, int frameCount)
     {
-        var source = new byte[frameCount * _formatByteSize * _channelCount];
+        var source = new byte[frameCount * _sampleSizeInBytes];
 
         return ReadBuffer(source, destination);
     }
@@ -43,7 +32,7 @@ internal class PcmDataReader : IDisposable
     private int ReadBuffer(byte[] source, Span<float> destination)
     {
         var count = _stream.Read(source, 0, source.Length);
-        count -= count % _formatByteSize;     // Ensure we have a whole number of samples
+        count -= count % _sampleSizeInBytes;     // Ensure we have a whole number of samples
 
         if (count == 0)
         {
@@ -52,9 +41,9 @@ internal class PcmDataReader : IDisposable
 
         var offset = 0;
 
-        for (var i = 0; i < count; i += _formatByteSize)
+        for (var i = 0; i < count; i += _sampleSizeInBytes)
         {
-            destination[offset++] = _format switch
+            destination[offset++] = _audioFormat switch
             {
                 AudioFormat.Unsigned8Bit =>
                    VolumeAdjuster.Adjust(source[i], Volume) / 128f - 1,
@@ -65,7 +54,7 @@ internal class PcmDataReader : IDisposable
                 AudioFormat.Float32BitLittleEndian =>
                     VolumeAdjuster.Adjust(BitConverter.ToSingle(source, i), Volume),
 
-                _ => throw new ArgumentException($"Invalid audio format: {_format}.")
+                _ => throw new ArgumentException($"Invalid audio format: {_audioFormat}.")
             };
         }
 
