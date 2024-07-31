@@ -1,19 +1,17 @@
 # Beep
 
-Beep is a simple cross platform low level dotnet library for playing PCM audio data. It is not meant to be a full featured audio library,
-but an exercise how to create cross platform libraries in dotnet with native OS dependencies. It is also a good starting point for creating 
+Beep is a simple cross platform low level dotnet library for playing PCM audio data. It is also a good starting point for creating 
 more advanced audio libraries. 
 
-It was inspired by [oto](https://github.com/ebitengine/oto) golang library that I used before. However, it is not a direct port of it. It has been written
-from scratch in C# and .net 8, using async/await pattern.
+It was inspired by [oto](https://github.com/ebitengine/oto) golang library that I used before. However, it is not a direct port of it. It has been written from scratch in C# and .net 8, using async/await pattern.
 
-It is quite hard to find a decent examples of how to integrate native OS audio frameworks using P/Invoke.
+It is quite hard to find a decent examples of how to integrate native OS audio frameworks, especially that these frameworks are not so easy to use.
 
 ## Features
 - no external dependencies other than native OS frameworks 
 - cross platform, currently supports MacOS and Windows
 - supports 8-bit unsigned, 16-bit signed and 32-bit float PCM audio
-- simple way of controlling volume
+- simple volume control
 
 ### Supported platforms:
 - [MacOS](#MacOS)
