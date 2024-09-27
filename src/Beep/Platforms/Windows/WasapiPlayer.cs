@@ -17,6 +17,8 @@ internal class CoreAudioPlayer : IAudioPlayer
     private readonly int _bufferFrameCount;
     private readonly int _channelCount;
     private readonly int _frameSize;
+    private readonly float[] _audioData;
+    private readonly TimeSpan _waitTimeOut = TimeSpan.FromSeconds(2);
     private readonly AutoResetEvent _bufferReadyEvent = new(false);
     private readonly AsyncPauseResume _asyncPauseResume = new();
 
@@ -32,6 +34,8 @@ internal class CoreAudioPlayer : IAudioPlayer
 
         var audioRenderClientId = new Guid(IAudioRenderClient.IID);
         _renderClient = _audioClient.GetService(ref audioRenderClientId);
+
+        _audioData = new float[_bufferFrameCount * _frameSize];
     }
 
     private static IAudioClient Activate()
@@ -97,10 +101,7 @@ internal class CoreAudioPlayer : IAudioPlayer
 
     public async Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken)
     {
-        _audioClient.Start();
-
-        var audioData = new float[_bufferFrameCount * _frameSize];
-        var waitTimeOut = TimeSpan.FromSeconds(2);
+        Start();
 
         try
         {
@@ -112,30 +113,44 @@ internal class CoreAudioPlayer : IAudioPlayer
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    _bufferReadyEvent.WaitOne(waitTimeOut, false);
-
-                    var paddingFrameCount = _audioClient.GetCurrentPadding();
-                    var framesAvailable = _bufferFrameCount - paddingFrameCount;
-
-                    var audioDataLength = reader.ReadFrames(audioData, framesAvailable * _channelCount);
-                    if (audioDataLength == 0)
-                    {
-                        break;
-                    }
-
-                    var audioBuffer = _renderClient.GetBuffer(framesAvailable);
-
-                    Marshal.Copy(audioData, 0, audioBuffer, audioDataLength);
-
-                    _renderClient.ReleaseBuffer(framesAvailable, AudioClientBufferFlags.None);
+                    await Enqueue(reader, cancellationToken);
                 }
             }, cancellationToken);
         }
         finally
         {
-            _audioClient.Stop();
-            _audioClient.Reset();
+            Stop();
         }
+    }
+
+    public Task Enqueue(PcmDataReader reader, CancellationToken cancellationToken)
+    {
+        _bufferReadyEvent.WaitOne(_waitTimeOut, false);
+
+        var paddingFrameCount = _audioClient.GetCurrentPadding();
+        var framesAvailable = _bufferFrameCount - paddingFrameCount;
+
+        var audioDataLength = reader.ReadFrames(_audioData, framesAvailable * _channelCount);
+        if (audioDataLength == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        var audioBuffer = _renderClient.GetBuffer(framesAvailable);
+
+        Marshal.Copy(_audioData, 0, audioBuffer, audioDataLength);
+
+        _renderClient.ReleaseBuffer(framesAvailable, AudioClientBufferFlags.None);
+
+        return Task.CompletedTask;
+    }
+
+    public void Start() => _audioClient.Start();
+
+    public void Stop()
+    {
+        _audioClient.Stop();
+        _audioClient.Reset();
     }
 
     public void Pause() => _asyncPauseResume.Pause();
