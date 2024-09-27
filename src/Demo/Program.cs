@@ -49,9 +49,11 @@ rootCommand.SetHandler(async (audioFormat, sampleRate, channels, waveType, volum
         _ => throw new NotSupportedException("The audio format is not supported.")
     };
     var parsedWaveType = Enum.Parse<WaveType>(waveType, ignoreCase: true);
-    var demoPlayer = new DemoPlayer(parsedAudioFormat, sampleRate, channels, parsedWaveType, volume);
-    var timer = Stopwatch.StartNew();
 
+    var demoPlayerFactory = new DemoPlayerFactory(parsedAudioFormat, sampleRate, channels, parsedWaveType, volume);
+    var demoPlayer = demoPlayerFactory.CreateDemoPlayer(DemoType.DefaultDemo);
+
+    var timer = Stopwatch.StartNew();
     await demoPlayer.PlayAsync();
 
     Console.WriteLine($"Finished playing audio in {timer.ElapsedMilliseconds}ms.");

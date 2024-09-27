@@ -113,7 +113,7 @@ internal class CoreAudioPlayer : IAudioPlayer
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    await Enqueue(reader, cancellationToken);
+                    await EnqueueAsync(reader, cancellationToken);
                 }
             }, cancellationToken);
         }
@@ -123,7 +123,7 @@ internal class CoreAudioPlayer : IAudioPlayer
         }
     }
 
-    public Task Enqueue(PcmDataReader reader, CancellationToken cancellationToken)
+    public Task EnqueueAsync(PcmDataReader reader, CancellationToken cancellationToken)
     {
         _bufferReadyEvent.WaitOne(_waitTimeOut, false);
 

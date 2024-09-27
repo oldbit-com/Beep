@@ -57,7 +57,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    await Enqueue(reader, cancellationToken);
+                    await EnqueueAsync(reader, cancellationToken);
                 }
             }, cancellationToken);
         }
@@ -67,7 +67,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         }
     }
 
-    public async Task Enqueue(PcmDataReader reader, CancellationToken cancellationToken)
+    public async Task EnqueueAsync(PcmDataReader reader, CancellationToken cancellationToken)
     {
         var audioData = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
 
