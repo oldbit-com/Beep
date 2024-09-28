@@ -10,7 +10,7 @@ public class EnqueueDemo(AudioFormat audioFormat, int sampleRate, int channelCou
         var waveGenerator = WaveGeneratorFactory.CreateWaveGenerator(audioFormat, waveType, sampleRate, channelCount);
         var audioData = waveGenerator.Generate(659.25f, TimeSpan.FromSeconds(3));
 
-        using var audioPlayer = new AudioPlayer(audioFormat, sampleRate, channelCount, new PlayerOptions { BufferSizeInBytes = 4096 });
+        using var audioPlayer = new AudioPlayer(audioFormat, sampleRate, channelCount);
         audioPlayer.Volume = volume;
 
         audioPlayer.Start();

@@ -19,6 +19,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
     private readonly Channel<IntPtr> _availableAudioBuffers;
     private readonly AsyncPauseResume _asyncPauseResume = new();
     private GCHandle _gch;
+    private bool _isBufferEmpty;
 
     internal AudioQueuePlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
@@ -51,7 +52,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         {
             await Task.Run(async () =>
             {
-                while (true)
+                while (!_isBufferEmpty)
                 {
                     await _asyncPauseResume.WaitIfPausedAsync(cancellationToken);
 
@@ -72,7 +73,10 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         var audioData = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
 
         var audioDataLength = reader.ReadFrames(audioData, audioData.Length);
-        if (audioDataLength == 0)
+        
+        _isBufferEmpty = audioDataLength == 0;
+        
+        if (_isBufferEmpty)
         {
             return;
         }

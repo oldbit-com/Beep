@@ -7,7 +7,7 @@ namespace OldBit.Beep.Readers;
 /// Reads PCM audio data from a stream. It converts the data to 32-bit float values
 /// which is the format internally used by the platform's audio system implementation.
 /// </summary>
-internal class PcmDataReader : IDisposable
+internal sealed class PcmDataReader : IDisposable
 {
     private readonly Stream _stream;
     private readonly AudioFormat _audioFormat;
@@ -25,14 +25,9 @@ internal class PcmDataReader : IDisposable
 
     internal int ReadFrames(Span<float> destination, int frameCount)
     {
-        var source = new byte[frameCount * _sampleSizeInBytes];
+        var buffer = new byte[frameCount * _sampleSizeInBytes];
 
-        return ReadBuffer(source, destination);
-    }
-
-    private int ReadBuffer(byte[] source, Span<float> destination)
-    {
-        var count = _stream.Read(source, 0, source.Length);
+        var count = _stream.Read(buffer, 0, buffer.Length);
         count -= count % _sampleSizeInBytes;     // Ensure we have a whole number of samples
 
         if (count == 0)
@@ -47,13 +42,13 @@ internal class PcmDataReader : IDisposable
             destination[offset++] = _audioFormat switch
             {
                 AudioFormat.Unsigned8Bit =>
-                    VolumeFilter.Apply(source[i]) / 128f - 1,
+                    VolumeFilter.Apply(buffer[i]) / 128f - 1,
 
                 AudioFormat.Signed16BitIntegerLittleEndian =>
-                    VolumeFilter.Apply(BitConverter.ToInt16(source, i)) / 32768f,
+                    VolumeFilter.Apply(BitConverter.ToInt16(buffer, i)) / 32768f,
 
                 AudioFormat.Float32BitLittleEndian =>
-                    VolumeFilter.Apply(BitConverter.ToSingle(source, i)),
+                    VolumeFilter.Apply(BitConverter.ToSingle(buffer, i)),
 
                 _ => throw new ArgumentException($"Invalid audio format: {_audioFormat}.")
             };
@@ -61,6 +56,8 @@ internal class PcmDataReader : IDisposable
 
         return offset;
     }
+
+    internal void Close() => Dispose();
 
     private void Dispose(bool disposing)
     {
@@ -80,5 +77,6 @@ internal class PcmDataReader : IDisposable
     public void Dispose()
     {
         Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }
