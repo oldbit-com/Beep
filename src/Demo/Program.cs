@@ -26,9 +26,9 @@ var volumeOption = new Option<int>("--vol", () => 50, "The volume level");
 volumeOption.AddValidator(result =>
 {
     var volume = result.GetValueForOption(volumeOption);
-    if (volume is < 1 or > 100)
+    if (volume is < 0 or > 100)
     {
-        result.ErrorMessage = "Volume must be between 1 and 100";
+        result.ErrorMessage = "Volume must be between 0 and 100";
     }
 });
 volumeOption.AddAlias("-v");

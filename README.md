@@ -1,11 +1,16 @@
 # Beep
 
-Beep is a simple cross platform low level dotnet library for playing PCM audio data. It is also a good starting point for creating 
-more advanced audio libraries. 
+Beep is a simple cross platform low level dotnet library for playing PCM audio data.
 
-It was inspired by [oto](https://github.com/ebitengine/oto) golang library that I used before. However, it is not a direct port of it. It has been written from scratch in C# and .net 8, using async/await pattern.
+It was inspired by [oto](https://github.com/ebitengine/oto) golang library that I used before. However, it is not a direct port of it.
 
-It is quite hard to find a decent examples of how to integrate native OS audio frameworks, especially that these frameworks are not so easy to use.
+It has been written from scratch in C# using .NET 8, and it does not depend on any other libraries, but uses native OS audio frameworks.
+
+In general there are two main methods for playing audio:
+- `PlayAsync` - allows playing audio data from a byte array or a stream until the end of the data.
+  It starts and stops the audio playback automatically.
+- `EnqueueAsync` - allows playing audio data chunks, player needs to be started and stopped
+   programmatically. It can play small chunks of data.
 
 ## Features
 - no external dependencies other than native OS frameworks 
@@ -25,7 +30,7 @@ Audio playback is implemented using [AudioToolbox.framework](https://developer.a
 Audio playback is implemented using [WASAPI](https://docs.microsoft.com/en-us/windows/win32/coreaudio/wasapi).
 
 #### Linux
-TBD later, time permitting
+TBD laterxw
 
 ## Usage
 
@@ -37,7 +42,7 @@ Please check [Demo](src/Demo) project for an example how to use this library.
 using OldBit.Beep;
 
 using var audioPlayer = new AudioPlayer(AudioFormat.Float32BitLittleEndian, 44100, 2);
-audioPlayer.Volume = 50;  // That is the default value, valid values are 1-100
+audioPlayer.Volume = 50;  // That is the default value, valid values are 0-100
 
 await audioPlayer.PlayAsync(new byte[] { 0.5f, 0.5f, 0.5f, 0.5f });
 ```

@@ -7,12 +7,11 @@ namespace OldBit.Beep.Readers;
 /// Reads PCM audio data from a stream. It converts the data to 32-bit float values
 /// which is the format internally used by the platform's audio system implementation.
 /// </summary>
-internal sealed class PcmDataReader : IDisposable
+internal sealed class PcmDataReader : IDisposable, IAsyncDisposable
 {
     private readonly Stream _stream;
     private readonly AudioFormat _audioFormat;
     private readonly int _sampleSizeInBytes;
-    private bool _disposed;
 
     internal VolumeFilter VolumeFilter { get; } = new();
 
@@ -59,24 +58,7 @@ internal sealed class PcmDataReader : IDisposable
 
     internal void Close() => Dispose();
 
-    private void Dispose(bool disposing)
-    {
-        if (_disposed)
-        {
-            return;
-        }
+    public void Dispose() => _stream.Dispose();
 
-        if (disposing)
-        {
-            _stream.Close();
-        }
-
-        _disposed = true;
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+    public async ValueTask DisposeAsync() => await _stream.DisposeAsync();
 }

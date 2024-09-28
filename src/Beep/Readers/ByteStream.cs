@@ -1,7 +1,8 @@
 namespace OldBit.Beep.Readers;
 
 /// <summary>
-/// The ByteStream class allows reading enumeration of bytes as a stream.
+/// A ByteStream represents a stream of bytes that can be read from an IEnumerable.
+/// No writing or seeking is supported.
 /// </summary>
 internal class ByteStream(IEnumerable<byte> data) : Stream
 {

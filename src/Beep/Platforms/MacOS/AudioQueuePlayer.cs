@@ -73,9 +73,9 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         var audioData = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
 
         var audioDataLength = reader.ReadFrames(audioData, audioData.Length);
-        
+
         _isBufferEmpty = audioDataLength == 0;
-        
+
         if (_isBufferEmpty)
         {
             return;

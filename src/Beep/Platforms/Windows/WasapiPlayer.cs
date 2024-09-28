@@ -20,7 +20,7 @@ internal class CoreAudioPlayer : IAudioPlayer
     private readonly int _frameSize;
     private readonly float[] _audioData;
     private readonly AsyncPauseResume _asyncPauseResume = new();
-    private readonly Channel<PcmDataReader> _queue = Channel.CreateBounded<PcmDataReader>(100);
+    private readonly Channel<PcmDataReader> _queue;
     private readonly Thread _queueWorker;
 
     private bool _isQueueRunning;
@@ -31,6 +31,7 @@ internal class CoreAudioPlayer : IAudioPlayer
         _audioClient = Activate();
         _frameSize = channelCount * FloatType.SizeInBytes;
         _channelCount = channelCount;
+        _queue = Channel.CreateBounded<PcmDataReader>(playerOptions.MaxBuffers);
 
         Initialize(sampleRate, channelCount, playerOptions.BufferSizeInBytes);
 
@@ -82,7 +83,7 @@ internal class CoreAudioPlayer : IAudioPlayer
 
     private static WaveFormatExtensible GetWaveFormat(int sampleRate, int channelCount)
     {
-        var blockAlign = sizeof(float) * channelCount;
+        var blockAlign = FloatType.SizeInBytes * channelCount;
 
         return new WaveFormatExtensible
         {
