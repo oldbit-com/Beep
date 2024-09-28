@@ -9,8 +9,8 @@ public class DemoPlayerFactory(AudioFormat audioFormat, int sampleRate, int chan
     {
         return demoType switch
         {
-            DemoType.DefaultDemo => new DemoPlayer(audioFormat, sampleRate, channelCount, waveType, volume),
-            DemoType.EnqueueDemo => new EnqueueDemo(audioFormat, sampleRate, channelCount, waveType, volume),
+            DemoType.Harmony => new DemoPlayer(audioFormat, sampleRate, channelCount, waveType, volume),
+            DemoType.Enqueue => new EnqueueDemo(audioFormat, sampleRate, channelCount, waveType, volume),
             _ => throw new ArgumentOutOfRangeException(nameof(demoType), demoType, null)
         };
     }

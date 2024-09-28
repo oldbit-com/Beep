@@ -2,7 +2,7 @@ namespace Demo;
 
 public enum DemoType
 {
-    DefaultDemo,
+    Harmony,
 
-    EnqueueDemo,
+    Enqueue,
 }

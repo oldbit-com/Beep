@@ -19,11 +19,10 @@ internal class CoreAudioPlayer : IAudioPlayer
     private readonly int _channelCount;
     private readonly int _frameSize;
     private readonly float[] _audioData;
-    private readonly TimeSpan _waitTimeOut = TimeSpan.FromSeconds(2);
     private readonly AsyncPauseResume _asyncPauseResume = new();
     private readonly Channel<PcmDataReader> _queue = Channel.CreateBounded<PcmDataReader>(100);
     private readonly Thread _queueWorker;
-    
+
     private bool _isQueueRunning;
     private bool _isBufferEmpty;
 
@@ -159,7 +158,9 @@ internal class CoreAudioPlayer : IAudioPlayer
                 framesAvailable = audioDataLength / _channelCount;
 
                 var audioBuffer = _renderClient.GetBuffer(framesAvailable);
+
                 Marshal.Copy(_audioData, 0, audioBuffer, audioDataLength);
+
                 _renderClient.ReleaseBuffer(framesAvailable, AudioClientBufferFlags.None);
             }
 
@@ -172,7 +173,7 @@ internal class CoreAudioPlayer : IAudioPlayer
     };
 
     public async Task EnqueueAsync(PcmDataReader reader, CancellationToken cancellationToken) =>
-        await _queue.Writer.WriteAsync(reader);
+        await _queue.Writer.WriteAsync(reader, cancellationToken);
 
     public void Start()
     {
@@ -192,7 +193,5 @@ internal class CoreAudioPlayer : IAudioPlayer
 
     public void Resume() => _asyncPauseResume.Resume();
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 }

@@ -10,12 +10,19 @@ public class EnqueueDemo(AudioFormat audioFormat, int sampleRate, int channelCou
         var waveGenerator = WaveGeneratorFactory.CreateWaveGenerator(audioFormat, waveType, sampleRate, channelCount);
         var audioData = waveGenerator.Generate(659.25f, TimeSpan.FromSeconds(3));
 
-        using var audioPlayer = new AudioPlayer(audioFormat, sampleRate, channelCount);
+        using var audioPlayer = new AudioPlayer(audioFormat, sampleRate, channelCount, new PlayerOptions { BufferSizeInBytes = 4096 });
         audioPlayer.Volume = volume;
 
         audioPlayer.Start();
 
-        var chunks = audioData.Chunk(768);
+        var sampleSize = audioFormat switch
+        {
+            AudioFormat.Signed16BitIntegerLittleEndian => 2,
+            AudioFormat.Float32BitLittleEndian => 4,
+            _ => 1
+        };
+
+        var chunks = audioData.Chunk(768 * sampleSize);
         foreach (var chunk in chunks)
         {
             await audioPlayer.EnqueueAsync(chunk);
