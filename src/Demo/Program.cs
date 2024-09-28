@@ -4,6 +4,10 @@ using Demo;
 using Demo.Generator;
 using OldBit.Beep;
 
+var demoModeOption = new Option<string>("--demo", () => "harmony", "The demo mode to play")
+    .FromAmong("harmony", "enqueue");
+demoModeOption.AddAlias("-d");
+
 var audioFormatOption = new Option<string>("--format", () => "f32le", "The format of the output file")
     .FromAmong("f32le", "s16le", "u8");
 audioFormatOption.AddAlias("-f");
@@ -30,13 +34,14 @@ volumeOption.AddValidator(result =>
 volumeOption.AddAlias("-v");
 
 var rootCommand = new RootCommand("Plays a demo audio.");
+rootCommand.AddOption(demoModeOption);
 rootCommand.AddOption(audioFormatOption);
 rootCommand.AddOption(sampleRateOption);
 rootCommand.AddOption(channelsOption);
 rootCommand.AddOption(waveOption);
 rootCommand.AddOption(volumeOption);
 
-rootCommand.SetHandler(async (audioFormat, sampleRate, channels, waveType, volume) =>
+rootCommand.SetHandler(async (demoMode, audioFormat, sampleRate, channels, waveType, volume) =>
 {
     Console.WriteLine("Playing demo audio...");
     Console.WriteLine($"Format: {audioFormat}  Sample rate: {sampleRate}  Channels: {channels}  WaveType: {waveType}  Volume: {volume}");
@@ -49,13 +54,20 @@ rootCommand.SetHandler(async (audioFormat, sampleRate, channels, waveType, volum
         _ => throw new NotSupportedException("The audio format is not supported.")
     };
     var parsedWaveType = Enum.Parse<WaveType>(waveType, ignoreCase: true);
-    var demoPlayer = new DemoPlayer(parsedAudioFormat, sampleRate, channels, parsedWaveType, volume);
-    var timer = Stopwatch.StartNew();
 
+    var demoPlayerFactory = new DemoPlayerFactory(parsedAudioFormat, sampleRate, channels, parsedWaveType, volume);
+    var demoPlayer = demoMode switch
+    {
+        "harmony" => demoPlayerFactory.CreateDemoPlayer(DemoType.Harmony),
+        "enqueue" => demoPlayerFactory.CreateDemoPlayer(DemoType.Enqueue),
+        _ => throw new NotSupportedException("The demo mode is not supported.")
+    };
+
+    var timer = Stopwatch.StartNew();
     await demoPlayer.PlayAsync();
 
     Console.WriteLine($"Finished playing audio in {timer.ElapsedMilliseconds}ms.");
 
-}, audioFormatOption, sampleRateOption, channelsOption, waveOption, volumeOption);
+}, demoModeOption,  audioFormatOption, sampleRateOption, channelsOption, waveOption, volumeOption);
 
 await rootCommand.InvokeAsync(args);

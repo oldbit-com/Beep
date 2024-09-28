@@ -19,6 +19,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
     private readonly Channel<IntPtr> _availableAudioBuffers;
     private readonly AsyncPauseResume _asyncPauseResume = new();
     private GCHandle _gch;
+    private bool _isBufferEmpty;
 
     internal AudioQueuePlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
@@ -45,35 +46,47 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
 
     public async Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken)
     {
-        StartAudioQueue();
-
-        var audioData = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
+        Start();
 
         try
         {
             await Task.Run(async () =>
             {
-                while (true)
+                while (!_isBufferEmpty)
                 {
                     await _asyncPauseResume.WaitIfPausedAsync(cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var audioDataLength = reader.ReadFrames(audioData, audioData.Length);
-                    if (audioDataLength == 0)
-                    {
-                        break;
-                    }
-
-                    await Enqueue(audioData, audioDataLength, cancellationToken);
+                    await EnqueueAsync(reader, cancellationToken);
                 }
             }, cancellationToken);
         }
         finally
         {
-            StopAudioQueue();
+            Stop();
         }
     }
+
+    public async Task EnqueueAsync(PcmDataReader reader, CancellationToken cancellationToken)
+    {
+        var audioData = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
+
+        var audioDataLength = reader.ReadFrames(audioData, audioData.Length);
+        
+        _isBufferEmpty = audioDataLength == 0;
+        
+        if (_isBufferEmpty)
+        {
+            return;
+        }
+
+        await Enqueue(audioData, audioDataLength, cancellationToken);
+    }
+
+    public void Start() => StartAudioQueue();
+
+    public void Stop() => StopAudioQueue();
 
     public void Pause() => _asyncPauseResume.Pause();
 

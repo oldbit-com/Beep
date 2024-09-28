@@ -12,6 +12,7 @@ public class AudioPlayer : IDisposable
     private readonly AudioFormat _audioFormat;
     private readonly IAudioPlayer _audioPlayer;
     private int _volume = 50;
+    private bool _isStarted;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioPlayer"/> class with specified audio format, sample rate, channel count, and player options.
@@ -81,6 +82,53 @@ public class AudioPlayer : IDisposable
         pcmDataReader.VolumeFilter.Volume = _volume;
 
         await _audioPlayer.PlayAsync(pcmDataReader, cancellationToken);
+    }
+
+    /// <summary>
+    /// Enqueues the audio data to be played.
+    /// </summary>
+    /// <param name="data">The audio data to enqueue.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests. </param>
+    /// <exception cref="AudioPlayerException">Thrown if player is not started.</exception>
+    public async Task EnqueueAsync(IEnumerable<byte> data, CancellationToken cancellationToken = default)
+    {
+        if (!_isStarted)
+        {
+            throw new AudioPlayerException("The audio player is not started. You need to call the Start method before enqueuing audio data.");
+        }
+
+        using var pcmDataReader = new PcmDataReader(new ByteStream(data), _audioFormat);
+        pcmDataReader.VolumeFilter.Volume = _volume;
+
+        await _audioPlayer.EnqueueAsync(pcmDataReader, cancellationToken);
+    }
+
+    /// <summary>
+    /// Starts the audio player.
+    /// </summary>
+    public void Start()
+    {
+        if (_isStarted)
+        {
+            return;
+        }
+
+        _audioPlayer.Start();
+        _isStarted = true;
+    }
+
+    /// <summary>
+    /// Stops the audio player.
+    /// </summary>
+    public void Stop()
+    {
+        if (!_isStarted)
+        {
+            return;
+        }
+
+        _audioPlayer.Stop();
+        _isStarted = false;
     }
 
     /// <summary>

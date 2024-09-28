@@ -1,13 +1,12 @@
 using Demo.Generator;
 using OldBit.Beep;
-using System.Threading;
 
 namespace Demo;
 
 /// <summary>
 /// Demonstrates how to play a sequence of notes.
 /// </summary>
-public class DemoPlayer(AudioFormat audioFormat, int sampleRate, int channelCount, WaveType waveType, int volume)
+public class DemoPlayer(AudioFormat audioFormat, int sampleRate, int channelCount, WaveType waveType, int volume) : IDemoPlayer
 {
     private const float NoteC5 = 523.25f;
     private const float NoteE5 = 659.25f;
