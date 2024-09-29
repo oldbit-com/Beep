@@ -68,7 +68,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
         }
     }
 
-    public async Task EnqueueAsync(PcmDataReader reader, CancellationToken cancellationToken)
+    public async ValueTask EnqueueAsync(PcmDataReader reader, CancellationToken cancellationToken)
     {
         var audioData = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
 
@@ -92,7 +92,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
 
     public void Resume() => _asyncPauseResume.Resume();
 
-    private async Task Enqueue(float[] audioData, int length,  CancellationToken cancellationToken)
+    private async ValueTask Enqueue(float[] audioData, int length,  CancellationToken cancellationToken)
     {
         var buffer = await _availableAudioBuffers.Reader.ReadAsync(cancellationToken);
 

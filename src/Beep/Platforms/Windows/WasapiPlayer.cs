@@ -74,35 +74,6 @@ internal class CoreAudioPlayer : IAudioPlayer
             ref audioSessionId);
     }
 
-    private long CalculateBufferSize100Ns(int sampleRate, int bufferSizeInBytes)
-    {
-        var bufferSizeInFrames = bufferSizeInBytes / _frameSize;
-
-        return (long)RefTimesPerSecond * bufferSizeInFrames / sampleRate;
-    }
-
-    private static WaveFormatExtensible GetWaveFormat(int sampleRate, int channelCount)
-    {
-        var blockAlign = FloatType.SizeInBytes * channelCount;
-
-        return new WaveFormatExtensible
-        {
-            WaveFormat = new WaveFormat
-            {
-                FormatTag = WaveFormatTag.Extensible,
-                Channels = (short)channelCount,
-                SamplesPerSecond = sampleRate,
-                AverageBytesPerSecond = sampleRate * blockAlign,
-                BlockAlign = (short)blockAlign,
-                BitsPerSample = 32,
-                ExtraSize = 22
-            },
-            ValidBitsPerSample = 32,
-            ChannelMask = channelCount == 1 ? ChannelMask.Mono : ChannelMask.Stereo,
-            SubFormat = SubFormat.IeeeFloat
-        };
-    }
-
     public async Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken)
     {
         Start();
@@ -127,13 +98,35 @@ internal class CoreAudioPlayer : IAudioPlayer
         }
     }
 
+    public async ValueTask EnqueueAsync(PcmDataReader reader, CancellationToken cancellationToken) =>
+        await _queue.Writer.WriteAsync(reader, cancellationToken);
+
+    public void Start()
+    {
+        _audioClient.Start();
+        _isQueueRunning = true;
+        _queueWorker.Start();
+    }
+
+    public void Stop()
+    {
+        _isQueueRunning = false;
+        _audioClient.Stop();
+        _audioClient.Reset();
+    }
+
+    public void Pause() => _asyncPauseResume.Pause();
+
+    public void Resume() => _asyncPauseResume.Resume();
+
+    public void Dispose() { }
+
     private Thread CreateWorker() => new(() =>
     {
         while (_isQueueRunning)
         {
             if (!_queue.Reader.TryRead(out var samples))
             {
-               // Thread.Sleep(10);
                 continue;
             }
 
@@ -173,26 +166,32 @@ internal class CoreAudioPlayer : IAudioPlayer
         Priority = ThreadPriority.AboveNormal
     };
 
-    public async Task EnqueueAsync(PcmDataReader reader, CancellationToken cancellationToken) =>
-        await _queue.Writer.WriteAsync(reader, cancellationToken);
-
-    public void Start()
+    private long CalculateBufferSize100Ns(int sampleRate, int bufferSizeInBytes)
     {
-        _audioClient.Start();
-        _isQueueRunning = true;
-        _queueWorker.Start();
+        var bufferSizeInFrames = bufferSizeInBytes / _frameSize;
+
+        return (long)RefTimesPerSecond * bufferSizeInFrames / sampleRate;
     }
 
-    public void Stop()
+    private static WaveFormatExtensible GetWaveFormat(int sampleRate, int channelCount)
     {
-        _isQueueRunning = false;
-        _audioClient.Stop();
-        _audioClient.Reset();
+        var blockAlign = FloatType.SizeInBytes * channelCount;
+
+        return new WaveFormatExtensible
+        {
+            WaveFormat = new WaveFormat
+            {
+                FormatTag = WaveFormatTag.Extensible,
+                Channels = (short)channelCount,
+                SamplesPerSecond = sampleRate,
+                AverageBytesPerSecond = sampleRate * blockAlign,
+                BlockAlign = (short)blockAlign,
+                BitsPerSample = 32,
+                ExtraSize = 22
+            },
+            ValidBitsPerSample = 32,
+            ChannelMask = channelCount == 1 ? ChannelMask.Mono : ChannelMask.Stereo,
+            SubFormat = SubFormat.IeeeFloat
+        };
     }
-
-    public void Pause() => _asyncPauseResume.Pause();
-
-    public void Resume() => _asyncPauseResume.Resume();
-
-    public void Dispose() { }
 }
