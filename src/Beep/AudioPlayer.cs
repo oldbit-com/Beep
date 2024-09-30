@@ -64,27 +64,6 @@ public class AudioPlayer : IDisposable
     }
 
     /// <summary>
-    /// Plays the audio data.
-    /// </summary>
-    /// <param name="data">The audio data to play. This is an enumerable collection of bytes.</param>
-    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-    public Task PlayAsync(IEnumerable<byte> data, CancellationToken cancellationToken = default) =>
-        PlayAsync(new ByteStream(data), cancellationToken);
-
-    /// <summary>
-    /// Plays the audio data from a stream.
-    /// </summary>
-    /// <param name="stream">The stream containing audio data to play. This is a Stream object.</param>
-    /// <param name="cancellationToken">The token to monitor for cancellation requests. </param>
-    public async Task PlayAsync(Stream stream, CancellationToken cancellationToken = default)
-    {
-        using var pcmDataReader = new PcmDataReader(stream, _audioFormat);
-        pcmDataReader.VolumeFilter.Volume = _volume;
-
-        await _audioPlayer.PlayAsync(pcmDataReader, cancellationToken);
-    }
-
-    /// <summary>
     /// Enqueues the audio data to be played.
     /// </summary>
     /// <param name="data">The audio data to enqueue.</param>
@@ -97,7 +76,26 @@ public class AudioPlayer : IDisposable
             throw new AudioPlayerException("The audio player is not started. You need to call the Start method before enqueuing audio data.");
         }
 
-        using var pcmDataReader = new PcmDataReader(new ByteStream(data), _audioFormat);
+        await using var pcmDataReader = new PcmDataReader(new ByteStream(data), _audioFormat);
+        pcmDataReader.VolumeFilter.Volume = _volume;
+
+        await _audioPlayer.EnqueueAsync(pcmDataReader, cancellationToken);
+    }
+
+    /// <summary>
+    /// Enqueues the audio stream to be played.
+    /// </summary>
+    /// <param name="stream">The audio stream to enqueue.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests. </param>
+    /// <exception cref="AudioPlayerException">Thrown if player is not started.</exception>
+    public async Task EnqueueAsync(Stream stream, CancellationToken cancellationToken = default)
+    {
+        if (!_isStarted)
+        {
+            throw new AudioPlayerException("The audio player is not started. You need to call the Start method before enqueuing audio data.");
+        }
+
+        await using var pcmDataReader = new PcmDataReader(stream, _audioFormat);
         pcmDataReader.VolumeFilter.Volume = _volume;
 
         await _audioPlayer.EnqueueAsync(pcmDataReader, cancellationToken);
@@ -130,16 +128,6 @@ public class AudioPlayer : IDisposable
         _audioPlayer.Stop();
         _isStarted = false;
     }
-
-    /// <summary>
-    /// Pauses the audio player.
-    /// </summary>
-    public void Pause() => _audioPlayer.Pause();
-
-    /// <summary>
-    /// Resumes the audio player.
-    /// </summary>
-    public void Resume() => _audioPlayer.Resume();
 
     public void Dispose()
     {

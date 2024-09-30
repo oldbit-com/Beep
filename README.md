@@ -44,9 +44,11 @@ using OldBit.Beep;
 using var audioPlayer = new AudioPlayer(AudioFormat.Float32BitLittleEndian, 44100, 2);
 audioPlayer.Volume = 50;  // That is the default value, valid values are 0-100
 
-await audioPlayer.PlayAsync(new byte[] { 0.5f, 0.5f, 0.5f, 0.5f });
+audioPlayer.Start();
+await audioPlayer.EnqueueAsync(new byte[] { 0.5f, 0.5f, 0.5f, 0.5f });
+audioPlayer.Stop();
 ```
-`PlayAsync` method takes a byte array of audio data or a Stream of bytes.
+`EnqueueAsync` method takes a byte array of audio data or a Stream of bytes.
 The data should be in the format specified in the constructor.
 
 The following data formats are supported:

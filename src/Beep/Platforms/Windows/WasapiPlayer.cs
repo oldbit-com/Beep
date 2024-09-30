@@ -18,10 +18,9 @@ internal class CoreAudioPlayer : IAudioPlayer
     private readonly int _bufferFrameCount;
     private readonly int _channelCount;
     private readonly int _frameSize;
-    private readonly float[] _audioData;
-    private readonly AsyncPauseResume _asyncPauseResume = new();
-    private readonly Channel<PcmDataReader> _queue;
+    private readonly Channel<PcmDataReader> _samplesQueue;
     private readonly Thread _queueWorker;
+    private readonly float[] _audioData;
 
     private bool _isQueueRunning;
     private bool _isBufferEmpty;
@@ -31,7 +30,13 @@ internal class CoreAudioPlayer : IAudioPlayer
         _audioClient = Activate();
         _frameSize = channelCount * FloatType.SizeInBytes;
         _channelCount = channelCount;
-        _queue = Channel.CreateBounded<PcmDataReader>(playerOptions.MaxBuffers);
+
+        _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.MaxBuffers)
+        {
+            SingleReader = true,
+            SingleWriter = true,
+            FullMode = BoundedChannelFullMode.Wait
+        });
 
         Initialize(sampleRate, channelCount, playerOptions.BufferSizeInBytes);
 
@@ -42,7 +47,7 @@ internal class CoreAudioPlayer : IAudioPlayer
 
         _audioData = new float[_bufferFrameCount * _frameSize];
 
-        _queueWorker = CreateWorker();
+        _queueWorker = CreateQueueWorkerThread();
     }
 
     private static IAudioClient Activate()
@@ -74,32 +79,8 @@ internal class CoreAudioPlayer : IAudioPlayer
             ref audioSessionId);
     }
 
-    public async Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken)
-    {
-        Start();
-
-        try
-        {
-            await Task.Run(async () =>
-            {
-                while (!_isBufferEmpty)
-                {
-                    await _asyncPauseResume.WaitIfPausedAsync(cancellationToken);
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    await EnqueueAsync(reader, cancellationToken);
-                }
-            }, cancellationToken);
-        }
-        finally
-        {
-            Stop();
-        }
-    }
-
     public async ValueTask EnqueueAsync(PcmDataReader reader, CancellationToken cancellationToken) =>
-        await _queue.Writer.WriteAsync(reader, cancellationToken);
+        await _samplesQueue.Writer.WriteAsync(reader, cancellationToken);
 
     public void Start()
     {
@@ -115,17 +96,19 @@ internal class CoreAudioPlayer : IAudioPlayer
         _audioClient.Reset();
     }
 
-    public void Pause() => _asyncPauseResume.Pause();
-
-    public void Resume() => _asyncPauseResume.Resume();
-
     public void Dispose() { }
 
-    private Thread CreateWorker() => new(() =>
+    private Thread CreateQueueWorkerThread() => new(QueueWorker)
+    {
+        IsBackground = true,
+        Priority = ThreadPriority.AboveNormal
+    };
+
+    private void QueueWorker()
     {
         while (_isQueueRunning)
         {
-            if (!_queue.Reader.TryRead(out var samples))
+            if (!_samplesQueue.Reader.TryRead(out var samples))
             {
                 continue;
             }
@@ -160,11 +143,7 @@ internal class CoreAudioPlayer : IAudioPlayer
 
             samples.Close();
         }
-    })
-    {
-        IsBackground = true,
-        Priority = ThreadPriority.AboveNormal
-    };
+    }
 
     private long CalculateBufferSize100Ns(int sampleRate, int bufferSizeInBytes)
     {

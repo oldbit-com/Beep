@@ -33,6 +33,11 @@ public class DemoPlayer(AudioFormat audioFormat, int sampleRate, int channelCoun
         using var audioPlayer = new AudioPlayer(audioFormat, sampleRate, channelCount, new PlayerOptions { BufferSizeInBytes = 4096 });
         audioPlayer.Volume = volume;
 
-        await audioPlayer.PlayAsync(audioData);
+        audioPlayer.Start();
+
+        await audioPlayer.EnqueueAsync(audioData);
+        await Task.Delay(3100);
+
+        audioPlayer.Stop();
     }
 }

@@ -11,22 +11,34 @@ namespace OldBit.Beep.Platforms.MacOS;
 /// Represents an audio player that uses the Audio Queue Services API to play audio data.
 /// </summary>
 [SupportedOSPlatform("macos")]
-internal sealed class AudioQueuePlayer: IAudioPlayer
+internal sealed class AudioQueuePlayer : IAudioPlayer
 {
     private readonly PlayerOptions _playerOptions;
     private readonly IntPtr _audioQueue;
     private readonly List<IntPtr> _allocatedAudioBuffers;
-    private readonly Channel<IntPtr> _availableAudioBuffers;
-    private readonly AsyncPauseResume _asyncPauseResume = new();
+    private readonly Channel<IntPtr> _availableAudioBuffersQueue;
+    private readonly Channel<PcmDataReader> _samplesQueue;
+    private readonly Thread _queueWorker;
+    private readonly float[] _audioData;
+
     private GCHandle _gch;
-    private bool _isBufferEmpty;
+    private bool _isQueueRunning;
+    private bool _queueWorkerStopped = true;
 
     internal AudioQueuePlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
         _playerOptions = playerOptions;
         _gch = GCHandle.Alloc(this);
+        _audioData = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
 
-        _availableAudioBuffers = Channel.CreateBounded<IntPtr>(new BoundedChannelOptions(_playerOptions.MaxBuffers)
+        _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.MaxBuffers)
+        {
+            SingleReader = true,
+            SingleWriter = true,
+            FullMode = BoundedChannelFullMode.Wait
+        });
+
+        _availableAudioBuffersQueue = Channel.CreateBounded<IntPtr>(new BoundedChannelOptions(playerOptions.MaxBuffers)
         {
             SingleReader = true,
             SingleWriter = true,
@@ -40,61 +52,87 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
 
         foreach (var buffer in _allocatedAudioBuffers)
         {
-            _availableAudioBuffers.Writer.TryWrite(buffer);
+            _availableAudioBuffersQueue.Writer.TryWrite(buffer);
         }
+
+        _queueWorker = CreateQueueWorkerThread();
     }
 
-    public async Task PlayAsync(PcmDataReader reader, CancellationToken cancellationToken)
-    {
-        Start();
+    public async ValueTask EnqueueAsync(PcmDataReader reader, CancellationToken cancellationToken) =>
+        await _samplesQueue.Writer.WriteAsync(reader, cancellationToken);
 
-        try
+    public void Start()
+    {
+        StartAudioQueue();
+
+        _isQueueRunning = true;
+        _queueWorker.Start();
+    }
+
+    public void Stop()
+    {
+        _isQueueRunning = false;
+
+        while (!_queueWorkerStopped)
         {
-            await Task.Run(async () =>
+            Thread.Sleep(5);
+        }
+        _queueWorker.Join();
+
+        StopAudioQueue();
+    }
+
+    private Thread CreateQueueWorkerThread() => new(QueueWorker)
+    {
+        IsBackground = true,
+        Priority = ThreadPriority.AboveNormal
+    };
+
+    private async void QueueWorker()
+    {
+        _queueWorkerStopped = false;
+
+        while (_isQueueRunning)
+        {
+            var hasData = false;
+            var hasSamplesToPlay = _samplesQueue.Reader.TryRead(out var samples);
+
+            if (hasSamplesToPlay)
             {
-                while (!_isBufferEmpty)
+                while (_isQueueRunning)
                 {
-                    await _asyncPauseResume.WaitIfPausedAsync(cancellationToken);
+                    var audioDataLength = samples!.ReadFrames(_audioData, _audioData.Length);
 
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    await EnqueueAsync(reader, cancellationToken);
+                    if (audioDataLength != 0)
+                    {
+                        await Enqueue(_audioData, audioDataLength, CancellationToken.None);
+                        hasData = true;
+                    }
+                    else
+                    {
+                        samples.Close();
+                        break;
+                    }
                 }
-            }, cancellationToken);
+            }
+
+            if (hasData)
+            {
+                continue;
+            }
+
+            // We need to keep sending empty buffers to the audio queue to keep it running
+            // if there is no data to play
+            Array.Fill(_audioData, 0);
+            await Enqueue(_audioData, _audioData.Length / 4, CancellationToken.None);
         }
-        finally
-        {
-            Stop();
-        }
+
+        _queueWorkerStopped = true;
     }
-
-    public async ValueTask EnqueueAsync(PcmDataReader reader, CancellationToken cancellationToken)
-    {
-        var audioData = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
-
-        var audioDataLength = reader.ReadFrames(audioData, audioData.Length);
-
-        _isBufferEmpty = audioDataLength == 0;
-
-        if (_isBufferEmpty)
-        {
-            return;
-        }
-
-        await Enqueue(audioData, audioDataLength, cancellationToken);
-    }
-
-    public void Start() => StartAudioQueue();
-
-    public void Stop() => StopAudioQueue();
-
-    public void Pause() => _asyncPauseResume.Pause();
-
-    public void Resume() => _asyncPauseResume.Resume();
 
     private async ValueTask Enqueue(float[] audioData, int length,  CancellationToken cancellationToken)
     {
-        var buffer = await _availableAudioBuffers.Reader.ReadAsync(cancellationToken);
+        var buffer = await _availableAudioBuffersQueue.Reader.ReadAsync(cancellationToken);
 
         unsafe
         {
@@ -127,7 +165,11 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
 
     private void StopAudioQueue()
     {
-        AudioToolbox.AudioQueueStop(_audioQueue, true);
+        var status = AudioToolbox.AudioQueueStop(_audioQueue, true);
+        if (status != 0)
+        {
+            throw new AudioPlayerException($"Failed to stop audio queue: {status}", status);
+        }
     }
 
     private static AudioStreamBasicDescription CreateAudioStreamBasicDescription(int sampleRate, int channelCount) => new()
@@ -184,7 +226,7 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
 
         if (gch.Target is AudioQueuePlayer player)
         {
-            player._availableAudioBuffers.Writer.TryWrite(buffer);
+            player._availableAudioBuffersQueue.Writer.TryWrite(buffer);
         }
     }
 
@@ -195,14 +237,23 @@ internal sealed class AudioQueuePlayer: IAudioPlayer
             return;
         }
 
+        int status;
         foreach (var buffer in _allocatedAudioBuffers)
         {
-            _ = AudioToolbox.AudioQueueFreeBuffer(_audioQueue, buffer);
+            status = AudioToolbox.AudioQueueFreeBuffer(_audioQueue, buffer);
+            if (status != 0)
+            {
+                throw new AudioPlayerException($"Failed to free buffer: {status}", status);
+            }
         }
 
         _allocatedAudioBuffers.Clear();
 
-        _ = AudioToolbox.AudioQueueDispose(_audioQueue, true);
+        status = AudioToolbox.AudioQueueDispose(_audioQueue, true);
+        if (status != 0)
+        {
+            throw new AudioPlayerException($"Failed to free audio queue: {status}", status);
+        }
     }
 
     public void Dispose()
