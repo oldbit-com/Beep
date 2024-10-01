@@ -177,7 +177,7 @@ internal sealed class AudioQueuePlayer : IAudioPlayer
     private static AudioStreamBasicDescription CreateAudioStreamBasicDescription(int sampleRate, int channelCount) => new()
     {
         SampleRate = sampleRate,
-        Format = AudioFormatType.LinearPCM,
+        Format = AudioFormatType.LinearPcm,
         FormatFlags = AudioFormatFlags.AudioFormatFlagIsFloat,
         BytesPerPacket = (uint)(channelCount * FloatType.SizeInBytes),
         FramesPerPacket = 1,

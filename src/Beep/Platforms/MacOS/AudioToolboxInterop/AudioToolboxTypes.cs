@@ -18,7 +18,7 @@ internal struct AudioStreamBasicDescription
 
 internal enum AudioFormatType : uint
 {
-    LinearPCM = 0x6c70636d,
+    LinearPcm = 0x6c70636d,
 }
 
 [Flags]
