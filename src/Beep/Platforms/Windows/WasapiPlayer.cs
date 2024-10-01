@@ -82,6 +82,8 @@ internal class CoreAudioPlayer : IAudioPlayer
     public async ValueTask EnqueueAsync(PcmDataReader reader, CancellationToken cancellationToken) =>
         await _samplesQueue.Writer.WriteAsync(reader, cancellationToken);
 
+    public bool TryEnqueue(PcmDataReader reader) => _samplesQueue.Writer.TryWrite(reader);
+
     public void Start()
     {
         _audioClient.Start();

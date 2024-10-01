@@ -67,15 +67,9 @@ public class AudioPlayer : IDisposable
     /// Enqueues the audio data to be played.
     /// </summary>
     /// <param name="data">The audio data to enqueue.</param>
-    /// <param name="cancellationToken">The token to monitor for cancellation requests. </param>
-    /// <exception cref="AudioPlayerException">Thrown if player is not started.</exception>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     public async Task EnqueueAsync(IEnumerable<byte> data, CancellationToken cancellationToken = default)
     {
-        if (!_isStarted)
-        {
-            throw new AudioPlayerException("The audio player is not started. You need to call the Start method before enqueuing audio data.");
-        }
-
         await using var pcmDataReader = new PcmDataReader(new ByteStream(data), _audioFormat);
         pcmDataReader.VolumeFilter.Volume = _volume;
 
@@ -83,22 +77,18 @@ public class AudioPlayer : IDisposable
     }
 
     /// <summary>
-    /// Enqueues the audio stream to be played.
+    /// Attempts to enqueue the audio data to be played.
     /// </summary>
-    /// <param name="stream">The audio stream to enqueue.</param>
-    /// <param name="cancellationToken">The token to monitor for cancellation requests. </param>
-    /// <exception cref="AudioPlayerException">Thrown if player is not started.</exception>
-    public async Task EnqueueAsync(Stream stream, CancellationToken cancellationToken = default)
+    /// <param name="data">The audio data to enqueue.</param>
+    /// <returns>
+    /// true if the audio data was successfully enqueued; otherwise, false.
+    /// </returns>
+    public bool TryEnqueue(IEnumerable<byte> data)
     {
-        if (!_isStarted)
-        {
-            throw new AudioPlayerException("The audio player is not started. You need to call the Start method before enqueuing audio data.");
-        }
-
-        await using var pcmDataReader = new PcmDataReader(stream, _audioFormat);
+        using var pcmDataReader = new PcmDataReader(new ByteStream(data), _audioFormat);
         pcmDataReader.VolumeFilter.Volume = _volume;
 
-        await _audioPlayer.EnqueueAsync(pcmDataReader, cancellationToken);
+        return _audioPlayer.TryEnqueue(pcmDataReader);
     }
 
     /// <summary>
