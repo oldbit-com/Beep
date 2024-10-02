@@ -97,7 +97,6 @@ public class AudioPlayer : IDisposable
         return _audioPlayer.TryEnqueue(pcmDataReader);
     }
 
-
     /// <summary>
     /// Adds an audio filter to the audio player.
     /// </summary>
