@@ -142,8 +142,6 @@ internal class CoreAudioPlayer : IAudioPlayer
 
                 _renderClient.ReleaseBuffer(framesAvailable, AudioClientBufferFlags.None);
             }
-
-            samples.Close();
         }
     }
 

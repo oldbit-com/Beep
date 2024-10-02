@@ -70,8 +70,13 @@ public class AudioPlayer : IDisposable
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     public async Task EnqueueAsync(IEnumerable<byte> data, CancellationToken cancellationToken = default)
     {
-        await using var pcmDataReader = new PcmDataReader(new ByteStream(data), _audioFormat);
-        pcmDataReader.VolumeFilter.Volume = _volume;
+        var pcmDataReader = new PcmDataReader(data, _audioFormat)
+        {
+            VolumeFilter =
+            {
+                Volume = _volume
+            }
+        };
 
         await _audioPlayer.EnqueueAsync(pcmDataReader, cancellationToken);
     }
@@ -85,8 +90,13 @@ public class AudioPlayer : IDisposable
     /// </returns>
     public bool TryEnqueue(IEnumerable<byte> data)
     {
-        using var pcmDataReader = new PcmDataReader(new ByteStream(data), _audioFormat);
-        pcmDataReader.VolumeFilter.Volume = _volume;
+        var pcmDataReader = new PcmDataReader(data, _audioFormat)
+        {
+            VolumeFilter =
+            {
+                Volume = _volume
+            }
+        };
 
         return _audioPlayer.TryEnqueue(pcmDataReader);
     }

@@ -112,7 +112,6 @@ internal sealed class AudioQueuePlayer : IAudioPlayer
                     }
                     else
                     {
-                        samples.Close();
                         break;
                     }
                 }

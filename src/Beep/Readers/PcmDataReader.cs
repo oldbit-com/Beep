@@ -7,26 +7,31 @@ namespace OldBit.Beep.Readers;
 /// Reads PCM audio data from a stream. It converts the data to 32-bit float values
 /// which is the format internally used by the platform's audio system implementation.
 /// </summary>
-internal sealed class PcmDataReader : IDisposable, IAsyncDisposable
+internal sealed class PcmDataReader
 {
-    private readonly Stream _stream;
+    private readonly IEnumerable<byte> _data;
     private readonly AudioFormat _audioFormat;
     private readonly int _sampleSizeInBytes;
+    private int _position;
 
+    internal List<IAudioFilter> Filters { get; } = [];
     internal VolumeFilter VolumeFilter { get; } = new();
 
-    internal PcmDataReader(Stream input, AudioFormat audioFormat)
+    internal PcmDataReader(IEnumerable<byte> data, AudioFormat audioFormat)
     {
-        _stream = input;
+        _data = data;
         _audioFormat = audioFormat;
         _sampleSizeInBytes = audioFormat.GetByteSize();
+
+        Filters.Add(VolumeFilter);
     }
 
     internal int ReadFrames(Span<float> destination, int frameCount)
     {
-        var buffer = new byte[frameCount * _sampleSizeInBytes];
+        var data = _data.Skip(_position).Take(frameCount * _sampleSizeInBytes).ToArray();
+        _position += data.Length;
 
-        var count = _stream.Read(buffer, 0, buffer.Length);
+        var count = data.Length;
         count -= count % _sampleSizeInBytes;     // Ensure we have a whole number of samples
 
         if (count == 0)
@@ -38,27 +43,19 @@ internal sealed class PcmDataReader : IDisposable, IAsyncDisposable
 
         for (var i = 0; i < count; i += _sampleSizeInBytes)
         {
-            destination[offset++] = _audioFormat switch
+            var value = _audioFormat switch
             {
-                AudioFormat.Unsigned8Bit =>
-                    VolumeFilter.Apply(buffer[i]) / 128f - 1,
-
-                AudioFormat.Signed16BitIntegerLittleEndian =>
-                    VolumeFilter.Apply(BitConverter.ToInt16(buffer, i)) / 32768f,
-
-                AudioFormat.Float32BitLittleEndian =>
-                    VolumeFilter.Apply(BitConverter.ToSingle(buffer, i)),
-
+                AudioFormat.Unsigned8Bit => data[i] / 128f - 1,
+                AudioFormat.Signed16BitIntegerLittleEndian => BitConverter.ToInt16(data, i) / 32768f,
+                AudioFormat.Float32BitLittleEndian =>BitConverter.ToSingle(data, i),
                 _ => throw new ArgumentException($"Invalid audio format: {_audioFormat}.")
             };
+
+            value = Filters.Aggregate(value, (current, filter) => filter.Apply(current));
+
+            destination[offset++] = value;
         }
 
         return offset;
     }
-
-    internal void Close() => Dispose();
-
-    public void Dispose() => _stream.Dispose();
-
-    public async ValueTask DisposeAsync() => await _stream.DisposeAsync();
 }
