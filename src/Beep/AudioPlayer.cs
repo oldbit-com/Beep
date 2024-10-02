@@ -1,3 +1,4 @@
+using OldBit.Beep.Filters;
 using OldBit.Beep.Platforms.MacOS;
 using OldBit.Beep.Platforms.Windows;
 using OldBit.Beep.Readers;
@@ -11,6 +12,7 @@ public class AudioPlayer : IDisposable
 {
     private readonly AudioFormat _audioFormat;
     private readonly IAudioPlayer _audioPlayer;
+    private readonly List<IAudioFilter> _filters = [];
     private int _volume = 50;
     private bool _isStarted;
 
@@ -70,13 +72,10 @@ public class AudioPlayer : IDisposable
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     public async Task EnqueueAsync(IEnumerable<byte> data, CancellationToken cancellationToken = default)
     {
-        var pcmDataReader = new PcmDataReader(data, _audioFormat)
-        {
-            VolumeFilter =
-            {
-                Volume = _volume
-            }
-        };
+        var pcmDataReader = new PcmDataReader(data, _audioFormat);
+
+        pcmDataReader.Filters.AddRange(_filters);
+        pcmDataReader.Filters.Add(new VolumeFilter(Volume));
 
         await _audioPlayer.EnqueueAsync(pcmDataReader, cancellationToken);
     }
@@ -90,16 +89,20 @@ public class AudioPlayer : IDisposable
     /// </returns>
     public bool TryEnqueue(IEnumerable<byte> data)
     {
-        var pcmDataReader = new PcmDataReader(data, _audioFormat)
-        {
-            VolumeFilter =
-            {
-                Volume = _volume
-            }
-        };
+        var pcmDataReader = new PcmDataReader(data, _audioFormat);
+
+        pcmDataReader.Filters.AddRange(_filters);
+        pcmDataReader.Filters.Add(new VolumeFilter(Volume));
 
         return _audioPlayer.TryEnqueue(pcmDataReader);
     }
+
+
+    /// <summary>
+    /// Adds an audio filter to the audio player.
+    /// </summary>
+    /// <param name="filter">The audio filter to add.</param>
+    public void AddFilter(IAudioFilter filter) => _filters.Add(filter);
 
     /// <summary>
     /// Starts the audio player.

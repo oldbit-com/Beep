@@ -1,16 +1,18 @@
 namespace OldBit.Beep.Filters;
 
-internal class VolumeFilter : IAudioFilter
+internal sealed class VolumeFilter : IAudioFilter
 {
-    internal int Volume { get; set; }
+    private readonly int _volume;
+
+    internal VolumeFilter(int volume) => _volume = volume;
 
     public float Apply(float value)
     {
-        var normalizedVolume = Volume / 100.0f;
+        var normalizedVolume = _volume / 100.0f;
 
-        var adjustedSample = value * normalizedVolume;
-        adjustedSample = Math.Clamp(adjustedSample, -1.0f, 1.0f);
+        var adjustedValue = value * normalizedVolume;
+        adjustedValue = Math.Clamp(adjustedValue, -1.0f, 1.0f);
 
-        return adjustedSample;
+        return adjustedValue;
     }
 }

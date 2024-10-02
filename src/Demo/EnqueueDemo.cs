@@ -33,13 +33,10 @@ public class EnqueueDemo(AudioFormat audioFormat, int sampleRate, int channelCou
         audioData = waveGenerator.Generate(800.25f, TimeSpan.FromSeconds(1));
 
         await audioPlayer.EnqueueAsync(audioData);
-        // chunks = audioData.Chunk(768 * sampleSize);
-        // foreach (var chunk in chunks)
-        // {
-        //     await audioPlayer.EnqueueAsync(chunk);
-        // }
 
-        await Task.Delay(5000);
+        await Task.Delay(20000);
+
+        await audioPlayer.EnqueueAsync(audioData);
 
         audioPlayer.Stop();
     }

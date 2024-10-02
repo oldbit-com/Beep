@@ -15,15 +15,12 @@ internal sealed class PcmDataReader
     private int _position;
 
     internal List<IAudioFilter> Filters { get; } = [];
-    internal VolumeFilter VolumeFilter { get; } = new();
 
     internal PcmDataReader(IEnumerable<byte> data, AudioFormat audioFormat)
     {
         _data = data;
         _audioFormat = audioFormat;
         _sampleSizeInBytes = audioFormat.GetByteSize();
-
-        Filters.Add(VolumeFilter);
     }
 
     internal int ReadFrames(Span<float> destination, int frameCount)
