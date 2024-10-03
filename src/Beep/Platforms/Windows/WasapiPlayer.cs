@@ -31,7 +31,7 @@ internal class CoreAudioPlayer : IAudioPlayer
         _frameSize = channelCount * FloatType.SizeInBytes;
         _channelCount = channelCount;
 
-        _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.MaxBuffers)
+        _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.MaxQueueSize)
         {
             SingleReader = true,
             SingleWriter = true,

@@ -3,7 +3,7 @@ namespace OldBit.Beep;
 /// <summary>
 /// Specifies advanced options for the audio player.
 /// </summary>
-public class PlayerOptions
+public sealed class PlayerOptions
 {
     internal static PlayerOptions Default { get; } = new();
 
@@ -11,6 +11,11 @@ public class PlayerOptions
     /// Gets or sets the size of the audio buffer in bytes. Default is 1024 bytes.
     /// </summary>
     public int BufferSizeInBytes { get; set; } = 1024;
+
+    /// <summary>
+    /// Gets or sets the maximum number of audio buffers in the queue. Default is 4.
+    /// </summary>
+    public int MaxQueueSize { get; set; } = 4;
 
     /// <summary>
     /// Gets or sets the maximum number of audio buffers. Default is 4. This setting applies to macOS only.

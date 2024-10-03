@@ -31,7 +31,7 @@ internal sealed class AudioQueuePlayer : IAudioPlayer
         _gch = GCHandle.Alloc(this);
         _audioData = new float[_playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
 
-        _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.MaxBuffers)
+        _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.MaxQueueSize)
         {
             SingleReader = true,
             SingleWriter = true,
