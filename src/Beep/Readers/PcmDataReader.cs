@@ -14,7 +14,7 @@ internal sealed class PcmDataReader
     private readonly int _sampleSizeInBytes;
     private int _position;
 
-    internal List<IAudioFilter> Filters { get; } = [];
+    internal List<IAudioFilter> Filters { get; init; } = null!;
 
     internal PcmDataReader(IEnumerable<byte> data, AudioFormat audioFormat)
     {

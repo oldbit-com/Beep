@@ -13,7 +13,7 @@ public class AudioPlayer : IDisposable
     private readonly AudioFormat _audioFormat;
     private readonly IAudioPlayer _audioPlayer;
     private readonly List<IAudioFilter> _filters = [];
-    private int _volume = 50;
+    private readonly VolumeFilter _volumeFilter;
     private bool _isStarted;
 
     /// <summary>
@@ -45,6 +45,7 @@ public class AudioPlayer : IDisposable
             throw new PlatformNotSupportedException($"The current platform is not supported.");
         }
 
+        _volumeFilter = new VolumeFilter(50);
         _audioPlayer = audioPlayer;
     }
 
@@ -54,14 +55,14 @@ public class AudioPlayer : IDisposable
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public int Volume
     {
-        get => _volume;
+        get => _volumeFilter.Volume;
         set
         {
             if (value is < 0 or > 100)
             {
                 throw new ArgumentOutOfRangeException(nameof(Volume), "The volume must be between 0 and 100.");
             }
-            _volume = value;
+            _volumeFilter.Volume = value;
         }
     }
 
@@ -73,9 +74,6 @@ public class AudioPlayer : IDisposable
     public async Task EnqueueAsync(IEnumerable<byte> data, CancellationToken cancellationToken = default)
     {
         var pcmDataReader = new PcmDataReader(data, _audioFormat);
-
-        pcmDataReader.Filters.AddRange(_filters);
-        pcmDataReader.Filters.Add(new VolumeFilter(Volume));
 
         await _audioPlayer.EnqueueAsync(pcmDataReader, cancellationToken);
     }
@@ -89,10 +87,10 @@ public class AudioPlayer : IDisposable
     /// </returns>
     public bool TryEnqueue(IEnumerable<byte> data)
     {
-        var pcmDataReader = new PcmDataReader(data, _audioFormat);
-
-        pcmDataReader.Filters.AddRange(_filters);
-        pcmDataReader.Filters.Add(new VolumeFilter(Volume));
+        var pcmDataReader = new PcmDataReader(data, _audioFormat)
+        {
+            Filters = _filters
+        };
 
         return _audioPlayer.TryEnqueue(pcmDataReader);
     }
@@ -111,6 +109,11 @@ public class AudioPlayer : IDisposable
         if (_isStarted)
         {
             return;
+        }
+
+        if (!_filters.Contains(_volumeFilter))
+        {
+            _filters.Add(_volumeFilter);
         }
 
         _audioPlayer.Start();
