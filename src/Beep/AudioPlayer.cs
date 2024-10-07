@@ -10,10 +10,10 @@ namespace OldBit.Beep;
 /// </summary>
 public class AudioPlayer : IDisposable
 {
-    private readonly AudioFormat _audioFormat;
     private readonly IAudioPlayer _audioPlayer;
     private readonly List<IAudioFilter> _filters = [];
     private readonly VolumeFilter _volumeFilter;
+    private readonly PcmDataReaderPool _pcmDataReaderPool;
     private bool _isStarted;
 
     /// <summary>
@@ -28,17 +28,18 @@ public class AudioPlayer : IDisposable
     public AudioPlayer(AudioFormat audioFormat, int sampleRate = 44100, int channelCount = 2, PlayerOptions? playerOptions = null)
     {
         playerOptions?.ThrowIfNotValid();
+        playerOptions ??= PlayerOptions.Default;
 
-        _audioFormat = audioFormat;
+        _pcmDataReaderPool = new PcmDataReaderPool(playerOptions.MaxQueueSize, audioFormat);
 
         IAudioPlayer audioPlayer;
         if (OperatingSystem.IsMacOS())
         {
-            audioPlayer = new AudioQueuePlayer(sampleRate, channelCount, playerOptions ?? PlayerOptions.Default);
+            audioPlayer = new AudioQueuePlayer(sampleRate, channelCount, playerOptions);
         }
         else if (OperatingSystem.IsWindows())
         {
-            audioPlayer = new CoreAudioPlayer(sampleRate, channelCount, playerOptions ?? PlayerOptions.Default);
+            audioPlayer = new CoreAudioPlayer(sampleRate, channelCount, playerOptions);
         }
         else
         {
@@ -62,6 +63,7 @@ public class AudioPlayer : IDisposable
             {
                 throw new ArgumentOutOfRangeException(nameof(Volume), "The volume must be between 0 and 100.");
             }
+
             _volumeFilter.Volume = value;
         }
     }
@@ -73,9 +75,10 @@ public class AudioPlayer : IDisposable
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     public async Task EnqueueAsync(IEnumerable<byte> data, CancellationToken cancellationToken = default)
     {
-        var pcmDataReader = new PcmDataReader(data, _audioFormat);
+        var reader = _pcmDataReaderPool.GetReader(data);
+        reader.Filters = _filters;
 
-        await _audioPlayer.EnqueueAsync(pcmDataReader, cancellationToken);
+        await _audioPlayer.EnqueueAsync(reader, cancellationToken);
     }
 
     /// <summary>
@@ -87,12 +90,10 @@ public class AudioPlayer : IDisposable
     /// </returns>
     public bool TryEnqueue(IEnumerable<byte> data)
     {
-        var pcmDataReader = new PcmDataReader(data, _audioFormat)
-        {
-            Filters = _filters
-        };
+        var reader = _pcmDataReaderPool.GetReader(data);
+        reader.Filters = _filters;
 
-        return _audioPlayer.TryEnqueue(pcmDataReader);
+        return _audioPlayer.TryEnqueue(reader);
     }
 
     /// <summary>
