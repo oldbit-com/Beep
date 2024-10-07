@@ -48,7 +48,10 @@ internal sealed class PcmDataReader
                 _ => throw new ArgumentException($"Invalid audio format: {_audioFormat}.")
             };
 
-            value = Filters.Aggregate(value, (current, filter) => filter.Apply(current));
+            foreach (var filter in Filters)
+            {
+                value = filter.Apply(value);
+            }
 
             destination[offset++] = value;
         }
