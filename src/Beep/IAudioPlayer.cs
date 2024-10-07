@@ -1,4 +1,4 @@
-using OldBit.Beep.Readers;
+using OldBit.Beep.Pcm;
 
 namespace OldBit.Beep;
 

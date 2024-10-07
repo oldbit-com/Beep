@@ -1,7 +1,7 @@
 using OldBit.Beep.Extensions;
 using OldBit.Beep.Filters;
 
-namespace OldBit.Beep.Readers;
+namespace OldBit.Beep.Pcm;
 
 /// <summary>
 /// Reads PCM audio data from a stream. It converts the data to 32-bit float values

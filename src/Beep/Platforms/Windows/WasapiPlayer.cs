@@ -2,9 +2,9 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading.Channels;
 using OldBit.Beep.Helpers;
+using OldBit.Beep.Pcm;
 using OldBit.Beep.Platforms.Windows.WasapiInterop;
 using OldBit.Beep.Platforms.Windows.WasapiInterop.Enums;
-using OldBit.Beep.Readers;
 
 namespace OldBit.Beep.Platforms.Windows;
 

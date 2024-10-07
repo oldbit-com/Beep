@@ -1,4 +1,4 @@
-namespace OldBit.Beep.Readers;
+namespace OldBit.Beep.Pcm;
 
 /// <summary>
 /// A pool of <see cref="PcmDataReader"/> instances. This is used to avoid creating new instances and

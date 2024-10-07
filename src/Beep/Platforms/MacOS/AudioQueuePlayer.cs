@@ -2,8 +2,8 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading.Channels;
 using OldBit.Beep.Helpers;
+using OldBit.Beep.Pcm;
 using OldBit.Beep.Platforms.MacOS.AudioToolboxInterop;
-using OldBit.Beep.Readers;
 
 namespace OldBit.Beep.Platforms.MacOS;
 
