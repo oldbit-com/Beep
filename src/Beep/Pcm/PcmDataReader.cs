@@ -11,8 +11,7 @@ internal sealed class PcmDataReader
 {
     private readonly AudioFormat _audioFormat;
     private readonly int _sampleSizeInBytes;
-    private byte[] _data = [];
-    private int _dataLength;
+    private IEnumerable<byte> _data = [];
     private int _position;
 
     internal List<IAudioFilter> Filters { get; set; } = [];
@@ -25,25 +24,13 @@ internal sealed class PcmDataReader
 
     internal void SetData(IEnumerable<byte> data)
     {
-        var count = 0;
-
-        foreach (var item in data)
-        {
-            if (count >= _data.Length)
-            {
-                Array.Resize(ref _data, _data.Length + 8192);
-            }
-
-            _data[count++] = item;
-        }
-
-        _dataLength = count;
+        _data = data;
         _position = 0;
     }
 
     internal int ReadFrames(Span<float> destination, int frameCount)
     {
-        var data = _data.AsSpan(_position, Math.Min(frameCount * _sampleSizeInBytes, _dataLength- _position));
+        var data = _data.Skip(_position).Take(frameCount * _sampleSizeInBytes).ToArray();
         _position += data.Length;
 
         var count = data.Length;
@@ -61,8 +48,8 @@ internal sealed class PcmDataReader
             var value = _audioFormat switch
             {
                 AudioFormat.Unsigned8Bit => data[i] / 128f - 1,
-                AudioFormat.Signed16BitIntegerLittleEndian => BitConverter.ToInt16(data[i..]) / 32768f,
-                AudioFormat.Float32BitLittleEndian => BitConverter.ToSingle(data[i..]),
+                AudioFormat.Signed16BitIntegerLittleEndian => BitConverter.ToInt16(data, i) / 32768f,
+                AudioFormat.Float32BitLittleEndian => BitConverter.ToSingle(data, i),
                 _ => throw new ArgumentException($"Invalid audio format: {_audioFormat}.")
             };
 
