@@ -10,15 +10,15 @@ namespace OldBit.Beep.Pcm;
 internal sealed class PcmDataReader
 {
     private readonly AudioFormat _audioFormat;
+    private readonly VolumeFilter _volumeFilter;
     private readonly int _sampleSizeInBytes;
     private IEnumerable<byte> _data = [];
     private int _position;
 
-    internal List<IAudioFilter> Filters { get; set; } = [];
-
-    internal PcmDataReader(AudioFormat audioFormat)
+    internal PcmDataReader(AudioFormat audioFormat, VolumeFilter volumeFilter)
     {
         _audioFormat = audioFormat;
+        _volumeFilter = volumeFilter;
         _sampleSizeInBytes = audioFormat.GetByteSize();
     }
 
@@ -53,10 +53,7 @@ internal sealed class PcmDataReader
                 _ => throw new ArgumentException($"Invalid audio format: {_audioFormat}.")
             };
 
-            foreach (var filter in Filters)
-            {
-                value = filter.Apply(value);
-            }
+            value = _volumeFilter.Apply(value);
 
             destination[offset++] = value;
         }

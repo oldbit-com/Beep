@@ -11,7 +11,6 @@ namespace OldBit.Beep;
 public class AudioPlayer : IDisposable
 {
     private readonly IAudioPlayer _audioPlayer;
-    private readonly List<IAudioFilter> _filters = [];
     private readonly VolumeFilter _volumeFilter;
     private readonly PcmDataReaderPool _pcmDataReaderPool;
     private bool _isStarted;
@@ -30,7 +29,8 @@ public class AudioPlayer : IDisposable
         playerOptions?.ThrowIfNotValid();
         playerOptions ??= PlayerOptions.Default;
 
-        _pcmDataReaderPool = new PcmDataReaderPool(playerOptions.MaxQueueSize, audioFormat);
+        _volumeFilter = new VolumeFilter(50);
+        _pcmDataReaderPool = new PcmDataReaderPool(playerOptions.MaxQueueSize, audioFormat, _volumeFilter);
 
         IAudioPlayer audioPlayer;
         if (OperatingSystem.IsMacOS())
@@ -46,7 +46,6 @@ public class AudioPlayer : IDisposable
             throw new PlatformNotSupportedException($"The current platform is not supported.");
         }
 
-        _volumeFilter = new VolumeFilter(50);
         _audioPlayer = audioPlayer;
     }
 
@@ -76,7 +75,6 @@ public class AudioPlayer : IDisposable
     public async Task EnqueueAsync(IEnumerable<byte> data, CancellationToken cancellationToken = default)
     {
         var reader = _pcmDataReaderPool.GetReader(data);
-        reader.Filters = _filters;
 
         await _audioPlayer.EnqueueAsync(reader, cancellationToken);
     }
@@ -91,16 +89,9 @@ public class AudioPlayer : IDisposable
     public bool TryEnqueue(IEnumerable<byte> data)
     {
         var reader = _pcmDataReaderPool.GetReader(data);
-        reader.Filters = _filters;
 
         return _audioPlayer.TryEnqueue(reader);
     }
-
-    /// <summary>
-    /// Adds an audio filter to the audio player.
-    /// </summary>
-    /// <param name="filter">The audio filter to add.</param>
-    public void AddFilter(IAudioFilter filter) => _filters.Add(filter);
 
     /// <summary>
     /// Starts the audio player.
@@ -110,11 +101,6 @@ public class AudioPlayer : IDisposable
         if (_isStarted)
         {
             return;
-        }
-
-        if (!_filters.Contains(_volumeFilter))
-        {
-            _filters.Add(_volumeFilter);
         }
 
         _audioPlayer.Start();
