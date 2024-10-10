@@ -6,7 +6,7 @@ namespace Demo;
 /// <summary>
 /// Demonstrates how to play a sequence of notes.
 /// </summary>
-public class DemoPlayer(AudioFormat audioFormat, int sampleRate, int channelCount, WaveType waveType, int volume) : IDemoPlayer
+public class DemoPlayer(AudioFormat audioFormat, int sampleRate, int channelCount, WaveType waveType, int volume)
 {
     private const float NoteC5 = 523.25f;
     private const float NoteE5 = 659.25f;
