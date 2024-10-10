@@ -10,7 +10,7 @@ public sealed class PlayerOptions
     /// <summary>
     /// Gets or sets the size of the audio buffer in bytes. Default is 1024 bytes.
     /// </summary>
-    public int BufferSizeInBytes { get; set; } = 1024;
+    public int BufferSizeInBytes { get; set; } = 8192;
 
     /// <summary>
     /// Gets or sets the maximum number of audio buffers in the queue. Default is 4.
