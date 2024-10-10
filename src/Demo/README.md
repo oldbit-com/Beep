@@ -12,7 +12,6 @@ Usage:
   Demo [options]
 
 Options:
-  -d, --demo <enqueue|harmony>   The demo mode to play [default: harmony]
   -f, --format <f32le|s16le|u8>  The format of the output file [default: f32le]
   -r, --rate <rate>              The sample rate [default: 44100]
   -c, --channels <channels>      The number of channels [default: 2]
@@ -29,5 +28,5 @@ Example:
 
 ./Demo --wave square --format u8 --rate 44100
 
-./Demo --demo enqueue --wave square --format f32le --rate 44100
+./Demo --wave square --format f32le --rate 44100
 ```
