@@ -26,4 +26,16 @@ internal static partial class Alsa
 
     [LibraryImport(AlsaLibrary)]
     internal static partial IntPtr snd_strerror(int errnum);
+
+    [LibraryImport(AlsaLibrary)]
+    internal static partial int snd_pcm_hw_params_set_channels(IntPtr pcm, IntPtr @params, uint val);
+
+    [LibraryImport(AlsaLibrary)]
+    internal static unsafe partial int snd_pcm_hw_params_set_rate_near(IntPtr pcm, IntPtr @params, uint* val, int* dir);
+
+    [LibraryImport(AlsaLibrary)]
+    internal static unsafe partial int snd_pcm_hw_params_set_buffer_size_near(IntPtr pcm, IntPtr @params, ulong* val);
+
+    [LibraryImport(AlsaLibrary)]
+    internal static unsafe partial int snd_pcm_hw_params_set_period_size_near(IntPtr pcm, IntPtr @params, ulong* val, int* dir);
 }

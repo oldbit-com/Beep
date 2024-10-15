@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using OldBit.Beep.Helpers;
 using OldBit.Beep.Pcm;
 using OldBit.Beep.Platforms.Linux.AlsaInterop;
 
@@ -12,9 +13,14 @@ internal sealed class AlsaPlayer : IAudioPlayer
 
     internal AlsaPlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
+        const int period = 2;
+
+        var periodSize = playerOptions.BufferSizeInBytes / (channelCount * FloatType.SizeInBytes * period);
+        var bufferSize = periodSize * period;
+
         try
         {
-            InitializePlayer();
+            InitializePlayer(sampleRate, channelCount, (ulong)periodSize, (ulong)bufferSize);
         }
         catch (DllNotFoundException ex)
         {
@@ -52,7 +58,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
         }
     }
 
-    private void InitializePlayer()
+    private void InitializePlayer(int sampleRate, int channelCount, ulong periodSize, ulong bufferSize)
     {
         var result = Alsa.snd_pcm_open(ref _pcm, "default", PcmStream.Playback, 0);
         ThrowIfError(result, "Unable to open PCM connection");
@@ -61,11 +67,31 @@ internal sealed class AlsaPlayer : IAudioPlayer
         result = Alsa.snd_pcm_hw_params_malloc(ref parameters);
         ThrowIfError(result, "Unable to allocate parameters buffer");
 
+        result = Alsa.snd_pcm_hw_params_any(_pcm, parameters);
+        ThrowIfError(result, "Unable to allocate parameters buffer");
+
         result = Alsa.snd_pcm_hw_params_set_access(_pcm, parameters, PcmAccess.ReadWriteInterleaved);
         ThrowIfError(result, "Unable to set access");
 
         result = Alsa.snd_pcm_hw_params_set_format(_pcm, parameters, PcmFormat.PcmFormatFloatLittleEndian);
         ThrowIfError(result, "Unable to set format");
+
+        result = Alsa.snd_pcm_hw_params_set_channels(_pcm, parameters, (uint)channelCount);
+        ThrowIfError(result, "Unable to set channels");
+
+        unsafe
+        {
+            var rate = (uint)sampleRate;
+
+            result = Alsa.snd_pcm_hw_params_set_rate_near(_pcm, parameters, &rate, null);
+            ThrowIfError(result, "Unable to set sample rate");
+
+            result = Alsa.snd_pcm_hw_params_set_buffer_size_near(_pcm, parameters, &bufferSize);
+            ThrowIfError(result, "Unable to set buffer size");
+
+            result = Alsa.snd_pcm_hw_params_set_period_size_near(_pcm, parameters, &periodSize, null);
+            ThrowIfError(result, "Unable to set period size");
+        }
     }
 
     private static void ThrowIfError(int result, string message)
