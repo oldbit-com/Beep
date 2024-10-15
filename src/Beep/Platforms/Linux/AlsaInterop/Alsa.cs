@@ -10,5 +10,20 @@ internal static partial class Alsa
     internal static partial int snd_pcm_open(ref IntPtr pcm, [MarshalAs(UnmanagedType.LPStr)]  string name, PcmStream stream, int mode);
 
     [LibraryImport(AlsaLibrary)]
+    internal static partial int snd_pcm_close(IntPtr pcm);
+
+    [LibraryImport(AlsaLibrary)]
     internal static partial int snd_pcm_hw_params_malloc(ref IntPtr @params);
+
+    [LibraryImport(AlsaLibrary)]
+    internal static partial int snd_pcm_hw_params_any(IntPtr pcm, IntPtr @params);
+
+    [LibraryImport(AlsaLibrary)]
+    internal static partial int snd_pcm_hw_params_set_access(IntPtr pcm, IntPtr @params, PcmAccess access);
+
+    [LibraryImport(AlsaLibrary)]
+    internal static partial int snd_pcm_hw_params_set_format(IntPtr pcm, IntPtr @params, PcmFormat val);
+
+    [LibraryImport(AlsaLibrary)]
+    internal static partial IntPtr snd_strerror(int errnum);
 }
