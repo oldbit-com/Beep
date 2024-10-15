@@ -92,6 +92,9 @@ internal sealed class AlsaPlayer : IAudioPlayer
             result = Alsa.snd_pcm_hw_params_set_period_size_near(_pcm, parameters, &periodSize, null);
             ThrowIfError(result, "Unable to set period size");
         }
+
+        result = Alsa.snd_pcm_hw_params(_pcm, parameters);
+        ThrowIfError(result, "Unable to send Alsa params");
     }
 
     private static void ThrowIfError(int result, string message)
