@@ -14,7 +14,7 @@ sampleRateOption.AddAlias("-r");
 var channelsOption = new Option<int>("--channels", () => 2, "The number of channels");
 channelsOption.AddAlias("-c");
 
-var waveOption = new Option<string>("--wave", () => "sine", "The type of waive to generate")
+var waveOption = new Option<string>("--wave", () => "sine", "The type of wave to generate")
     .FromAmong("sine", "square");
 waveOption.AddAlias("-w");
 
