@@ -44,7 +44,6 @@ public class PcmDataReaderTests
             Data = new byte[] { 0, 0, 0, 63 }
         };
 
-
         var buffer = new float[10];
         var count = reader.ReadFrames(buffer, buffer.Length);
 
