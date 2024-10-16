@@ -17,6 +17,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
     private readonly Channel<PcmDataReader> _samplesQueue;
     private readonly Thread _queueWorker;
     private readonly float[] _audioData;
+    private readonly int _channelCount;
 
     private IntPtr _pcm = IntPtr.Zero;
     private bool _isQueueRunning;
@@ -24,6 +25,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
 
     internal AlsaPlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
+        _channelCount = channelCount;
         _frameSize = channelCount * FloatType.SizeInBytes;
 
         _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.MaxQueueSize)
@@ -45,7 +47,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
             throw new AudioPlayerException("Make sure ALSA development library has been installed.", ex);
         }
 
-        _audioData = new float[playerOptions.BufferSizeInBytes];
+        _audioData = new float[periodSize * channelCount];
 
         _queueWorker = CreateQueueWorkerThread();
     }
@@ -70,7 +72,6 @@ internal sealed class AlsaPlayer : IAudioPlayer
             Thread.Sleep(5);
         }
         _queueWorker.Join();
-
     }
 
     public void Dispose()
@@ -97,7 +98,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
         result = snd_pcm_hw_params_set_access(_pcm, parameters, PcmAccess.ReadWriteInterleaved);
         ThrowIfError(result, "Unable to set access");
 
-        result = snd_pcm_hw_params_set_format(_pcm, parameters, PcmFormat.PcmFormatFloatLittleEndian);
+        result = snd_pcm_hw_params_set_format(_pcm, parameters, PcmFormat.FloatLittleEndian);
         ThrowIfError(result, "Unable to set format");
 
         result = snd_pcm_hw_params_set_channels(_pcm, parameters, (uint)channelCount);
@@ -141,24 +142,19 @@ internal sealed class AlsaPlayer : IAudioPlayer
 
             while (_isQueueRunning)
             {
-                var audioData = new float[_audioData.Length];
-                var audioDataLength = samples.ReadFrames(audioData, audioData.Length / _frameSize);
+                var audioDataLength = samples.ReadFrames(_audioData, _audioData.Length);
+
                 if (audioDataLength == 0)
                 {
                     break;
                 }
 
-                unsafe
+                var result = snd_pcm_writei(_pcm, _audioData, (ulong)(audioDataLength / _channelCount));
+                if (result == -32)
                 {
-                    fixed (float* buffer = audioData)
-                    {
-                        var result = snd_pcm_writei(_pcm, (IntPtr)buffer, (ulong)audioDataLength);
-                        if (result == -32)
-                        {
-                           // snd_pcm_prepare(_pcm);
-                            snd_pcm_writei(_pcm, (IntPtr)buffer, (ulong)audioDataLength);
-                        }
-                    }
+                    // Buffer underrun recovery
+                    result = snd_pcm_recover(_pcm, result, 0);
+                    ThrowIfError(result, "Unable to recover");
                 }
             }
         }

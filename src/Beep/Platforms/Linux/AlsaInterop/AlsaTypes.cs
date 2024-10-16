@@ -8,10 +8,16 @@ internal enum PcmStream
 
 internal enum PcmFormat
 {
-    PcmFormatFloatLittleEndian = 14,
+    /// <summary>
+    /// SND_PCM_FORMAT_FLOAT_LE
+    /// </summary>
+    FloatLittleEndian = 14,
 }
 
 internal enum PcmAccess
 {
+    /// <summary>
+    /// SND_PCM_ACCESS_RW_INTERLEAVED
+    /// </summary>
     ReadWriteInterleaved = 3,
 }

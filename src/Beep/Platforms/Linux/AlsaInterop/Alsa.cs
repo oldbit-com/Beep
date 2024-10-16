@@ -13,6 +13,12 @@ internal static partial class Alsa
     internal static partial int snd_pcm_writei(IntPtr pcm, IntPtr buffer, ulong size);
 
     [LibraryImport(AlsaLibrary)]
+    internal static partial int snd_pcm_writei(IntPtr pcm, float[] buffer, ulong size);
+
+    [LibraryImport(AlsaLibrary)]
+    internal static partial int snd_pcm_recover(IntPtr pcm, int err, int silent);
+
+    [LibraryImport(AlsaLibrary)]
     internal static partial int snd_pcm_prepare(IntPtr pcm);
 
     [LibraryImport(AlsaLibrary)]
