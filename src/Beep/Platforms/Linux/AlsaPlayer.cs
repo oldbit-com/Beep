@@ -82,13 +82,13 @@ internal sealed class AlsaPlayer : IAudioPlayer
     private void Initialize(int sampleRate, int channelCount, ulong periodSize, ulong bufferSize)
     {
         var result = snd_pcm_open(ref _pcm, "default", PcmStream.Playback, 0);
-        ThrowIfError(result, "Unable to open PCM connection");
+        ThrowIfError(result, "Unable to open PCM");
 
         result = snd_pcm_hw_params_malloc(ref _parameters);
-        ThrowIfError(result, "Unable to allocate parameters buffer");
+        ThrowIfError(result, "Unable to allocate params buffer");
 
         result = snd_pcm_hw_params_any(_pcm, _parameters);
-        ThrowIfError(result, "Unable to fill parameters buffer");
+        ThrowIfError(result, "Unable to fill params buffer");
 
         result = snd_pcm_hw_params_set_access(_pcm, _parameters, PcmAccess.ReadWriteInterleaved);
         ThrowIfError(result, "Unable to set access");
@@ -112,7 +112,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
         ThrowIfError(result, "Unable to set period size");
 
         result = snd_pcm_hw_params(_pcm, _parameters);
-        ThrowIfError(result, "Unable to send Alsa params");
+        ThrowIfError(result, "Unable to send params");
 
         snd_pcm_hw_params_free(_parameters);
     }
@@ -131,7 +131,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
         }
 
         var result = snd_pcm_close(_pcm);
-        ThrowIfError(result, "Unable to close PCM");
+        ThrowIfError(result, "Unable to close PCM handle");
 
         _pcm = IntPtr.Zero;
     }
