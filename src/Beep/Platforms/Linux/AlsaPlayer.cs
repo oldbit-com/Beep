@@ -88,7 +88,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
         ThrowIfError(result, "Unable to allocate parameters buffer");
 
         result = snd_pcm_hw_params_any(_pcm, _parameters);
-        ThrowIfError(result, "Unable to allocate parameters buffer");
+        ThrowIfError(result, "Unable to fill parameters buffer");
 
         result = snd_pcm_hw_params_set_access(_pcm, _parameters, PcmAccess.ReadWriteInterleaved);
         ThrowIfError(result, "Unable to set access");
