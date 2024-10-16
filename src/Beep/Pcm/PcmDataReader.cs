@@ -22,12 +22,6 @@ internal sealed class PcmDataReader
         _sampleSizeInBytes = audioFormat.GetByteSize();
     }
 
-    internal void SetData(IEnumerable<byte> data)
-    {
-        _data = data;
-        _position = 0;
-    }
-
     internal int ReadFrames(Span<float> destination, int frameCount)
     {
         var data = _data.Skip(_position).Take(frameCount * _sampleSizeInBytes).ToArray();
@@ -59,5 +53,14 @@ internal sealed class PcmDataReader
         }
 
         return offset;
+    }
+
+    internal IEnumerable<byte> Data
+    {
+        set
+        {
+            _data = value;
+            _position = 0;
+        }
     }
 }

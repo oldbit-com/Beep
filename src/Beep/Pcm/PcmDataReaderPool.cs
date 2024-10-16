@@ -22,7 +22,7 @@ internal sealed class PcmDataReaderPool
     internal PcmDataReader GetReader(IEnumerable<byte> data)
     {
         var reader = _pool[_position];
-        reader.SetData(data);
+        reader.Data = data;
 
         _position = (_position + 1) % _pool.Count;
 
