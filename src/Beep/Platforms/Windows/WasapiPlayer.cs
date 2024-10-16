@@ -23,7 +23,6 @@ internal class CoreAudioPlayer : IAudioPlayer
     private readonly float[] _audioData;
 
     private bool _isQueueRunning;
-    private bool _isBufferEmpty;
 
     internal CoreAudioPlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
@@ -126,9 +125,7 @@ internal class CoreAudioPlayer : IAudioPlayer
                 }
 
                 var audioDataLength = samples.ReadFrames(_audioData, framesAvailable * _channelCount);
-
-                _isBufferEmpty = audioDataLength == 0;
-                if (_isBufferEmpty)
+                if (audioDataLength == 0)
                 {
                     break;
                 }

@@ -10,6 +10,12 @@ internal static partial class Alsa
     internal static partial int snd_pcm_open(ref IntPtr pcm, [MarshalAs(UnmanagedType.LPStr)]  string name, PcmStream stream, int mode);
 
     [LibraryImport(AlsaLibrary)]
+    internal static partial int snd_pcm_writei(IntPtr pcm, IntPtr buffer, ulong size);
+
+    [LibraryImport(AlsaLibrary)]
+    internal static partial int snd_pcm_prepare(IntPtr pcm);
+
+    [LibraryImport(AlsaLibrary)]
     internal static partial int snd_pcm_close(IntPtr pcm);
 
     [LibraryImport(AlsaLibrary)]
@@ -17,6 +23,9 @@ internal static partial class Alsa
 
     [LibraryImport(AlsaLibrary)]
     internal static partial int snd_pcm_hw_params_malloc(ref IntPtr @params);
+
+    [LibraryImport(AlsaLibrary)]
+    internal static partial int snd_pcm_hw_params_free(IntPtr @params);
 
     [LibraryImport(AlsaLibrary)]
     internal static partial int snd_pcm_hw_params_any(IntPtr pcm, IntPtr @params);
@@ -34,11 +43,12 @@ internal static partial class Alsa
     internal static partial int snd_pcm_hw_params_set_channels(IntPtr pcm, IntPtr @params, uint val);
 
     [LibraryImport(AlsaLibrary)]
-    internal static unsafe partial int snd_pcm_hw_params_set_rate_near(IntPtr pcm, IntPtr @params, uint* val, int* dir);
+    //internal static unsafe partial int snd_pcm_hw_params_set_rate_near(IntPtr pcm, IntPtr @params, uint* val, int* dir);
+    internal static partial int snd_pcm_hw_params_set_rate_near(IntPtr pcm, IntPtr @params, ref uint val, ref int dir);
 
     [LibraryImport(AlsaLibrary)]
-    internal static unsafe partial int snd_pcm_hw_params_set_buffer_size_near(IntPtr pcm, IntPtr @params, ulong* val);
+    internal static partial int snd_pcm_hw_params_set_buffer_size_near(IntPtr pcm, IntPtr @params, ref ulong val);
 
     [LibraryImport(AlsaLibrary)]
-    internal static unsafe partial int snd_pcm_hw_params_set_period_size_near(IntPtr pcm, IntPtr @params, ulong* val, int* dir);
+    internal static partial int snd_pcm_hw_params_set_period_size_near(IntPtr pcm, IntPtr @params, ref ulong val, ref int dir);
 }
