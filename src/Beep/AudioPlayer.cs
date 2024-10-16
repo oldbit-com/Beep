@@ -1,5 +1,6 @@
 using OldBit.Beep.Filters;
 using OldBit.Beep.Pcm;
+using OldBit.Beep.Platforms.Linux;
 using OldBit.Beep.Platforms.MacOS;
 using OldBit.Beep.Platforms.Windows;
 
@@ -40,6 +41,10 @@ public class AudioPlayer : IDisposable
         else if (OperatingSystem.IsWindows())
         {
             audioPlayer = new CoreAudioPlayer(sampleRate, channelCount, playerOptions);
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            audioPlayer = new AlsaPlayer(sampleRate, channelCount, playerOptions);
         }
         else
         {

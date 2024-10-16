@@ -21,7 +21,7 @@ In general there are two main methods for playing audio:
 ### Supported platforms:
 - [MacOS](#MacOS)
 - [Windows](#Windows)
-- Linux TBD
+- [Linux](#Linux)
 
 #### MacOS
 Audio playback is implemented using [AudioToolbox.framework](https://developer.apple.com/documentation/audiotoolbox).
@@ -30,7 +30,19 @@ Audio playback is implemented using [AudioToolbox.framework](https://developer.a
 Audio playback is implemented using [WASAPI](https://docs.microsoft.com/en-us/windows/win32/coreaudio/wasapi).
 
 #### Linux
-TBD laterxw
+Audio playback is implemented using [ALSA](https://www.alsa-project.org).
+
+You may need to install ALSA development files. Installation method may differ depending on the Linux distribution.
+
+On Debian based Linux distributions run:
+```shell
+apt install libasound2-dev
+```
+On RedHat based Linux distributions run:
+
+```shell
+dnf install alsa-lib-devel
+```
 
 ## Usage
 
