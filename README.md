@@ -1,15 +1,15 @@
 # Beep Audio Player
 
-Beep is a simple cross-platform low level dotnet library for playing PCM audio data.
+Beep is a simple cross-platform low level dotnet library for playing PCM audio.
 
 It was inspired by [oto](https://github.com/ebitengine/oto) golang library that I used before. However, it is not a direct port of it.
 It has been created to be used by my ZX Spectrum emulator, hence the name Beep. I needed a simple way of playing 
 audio and couldn't find anything that would suit my needs.
 
 I don't plan to add any advanced features to this library. It is quite challenging to implement a good audio library 
-that would work on all platforms. Each platform has its own way of handling audio and goode examples are hard to find.
+that would work on all platforms. Each platform has its own way of handling audio and good examples are hard to find.
 
-I've tested this library on MacOS, Windows and Linux. But I can't guarantee that it will work on all systems.
+I've tested it on MacOS, Windows and Linux. But I can't guarantee that it will work on all systems.
 
 ## Features
 - written in C# and .NET 8
@@ -20,7 +20,7 @@ I've tested this library on MacOS, Windows and Linux. But I can't guarantee that
 
 Internally it uses 32-bit float PCM audio format (little endian).
 
-## Supported platforms:
+## Platforms:
 - [MacOS](#MacOS)
 - [Windows](#Windows)
 - [Linux](#Linux)
@@ -63,7 +63,11 @@ await audioPlayer.EnqueueAsync(new byte[] { 0.5f, 0.5f, 0.5f, 0.5f });
 audioPlayer.Stop();
 ```
 
-`EnqueueAsync` method takes an array of audio data. The format is one of the following:
-- `Unsigned8BitLittleEndian` - 8-bit unsigned PCM
-- `Signed16BitLittleEndian` - 16-bit signed PCM
-- `Float32BitLittleEndian` - 32-bit float PCM
+`EnqueueAsync` method takes an array of audio bytes. The format is one of the following:
+
+| Format                     | Description        | Size                    |
+|----------------------------|--------------------|-------------------------|
+| `Unsigned8BitLittleEndian` | 8-bit unsigned PCM | 1 byte (0..255)         |
+| `Signed16BitLittleEndian`  | 16-bit signed PCM  | 2 bytes (-32768..32767) |
+| `Float32BitLittleEndian`   | 32-bit float PCM   | 4 bytes (-1.0..1.0)     |
+
