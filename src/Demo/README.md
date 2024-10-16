@@ -15,7 +15,7 @@ Options:
   -f, --format <f32le|s16le|u8>  The format of the output file [default: f32le]
   -r, --rate <rate>              The sample rate [default: 44100]
   -c, --channels <channels>      The number of channels [default: 2]
-  -w, --wave <sine|square>       The type of waive to generate [default: sine]
+  -w, --wave <sine|square>       The type of wave to generate [default: sine]
   -v, --vol <vol>                The volume level [default: 50]
   --version                      Show version information
   -?, -h, --help                 Show help and usage information
