@@ -20,6 +20,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
     private readonly int _channelCount;
 
     private IntPtr _pcm = IntPtr.Zero;
+    private IntPtr _parameters = IntPtr.Zero;
     private bool _isQueueRunning;
     private bool _queueWorkerStopped = true;
 
@@ -72,55 +73,48 @@ internal sealed class AlsaPlayer : IAudioPlayer
             Thread.Sleep(5);
         }
         _queueWorker.Join();
+
+        Close();
     }
 
-    public void Dispose()
-    {
-        if (_pcm != IntPtr.Zero)
-        {
-            // Alsa.snd_pcm_close(_pcm);
-           // _pcm = IntPtr.Zero;
-        }
-    }
+    public void Dispose() => Close();
 
     private void Initialize(int sampleRate, int channelCount, ulong periodSize, ulong bufferSize)
     {
         var result = snd_pcm_open(ref _pcm, "default", PcmStream.Playback, 0);
         ThrowIfError(result, "Unable to open PCM connection");
 
-        var parameters = IntPtr.Zero;
-        result = snd_pcm_hw_params_malloc(ref parameters);
+        result = snd_pcm_hw_params_malloc(ref _parameters);
         ThrowIfError(result, "Unable to allocate parameters buffer");
 
-        result = snd_pcm_hw_params_any(_pcm, parameters);
+        result = snd_pcm_hw_params_any(_pcm, _parameters);
         ThrowIfError(result, "Unable to allocate parameters buffer");
 
-        result = snd_pcm_hw_params_set_access(_pcm, parameters, PcmAccess.ReadWriteInterleaved);
+        result = snd_pcm_hw_params_set_access(_pcm, _parameters, PcmAccess.ReadWriteInterleaved);
         ThrowIfError(result, "Unable to set access");
 
-        result = snd_pcm_hw_params_set_format(_pcm, parameters, PcmFormat.FloatLittleEndian);
+        result = snd_pcm_hw_params_set_format(_pcm, _parameters, PcmFormat.FloatLittleEndian);
         ThrowIfError(result, "Unable to set format");
 
-        result = snd_pcm_hw_params_set_channels(_pcm, parameters, (uint)channelCount);
+        result = snd_pcm_hw_params_set_channels(_pcm, _parameters, (uint)channelCount);
         ThrowIfError(result, "Unable to set channels");
 
         var rate = (uint)sampleRate;
         var dir = 0;
 
-        result = snd_pcm_hw_params_set_rate_near(_pcm, parameters, ref rate, ref dir);
+        result = snd_pcm_hw_params_set_rate_near(_pcm, _parameters, ref rate, ref dir);
         ThrowIfError(result, "Unable to set sample rate");
 
-        result = snd_pcm_hw_params_set_buffer_size_near(_pcm, parameters, ref bufferSize);
+        result = snd_pcm_hw_params_set_buffer_size_near(_pcm, _parameters, ref bufferSize);
         ThrowIfError(result, "Unable to set buffer size");
 
-        result = snd_pcm_hw_params_set_period_size_near(_pcm, parameters, ref periodSize, ref dir);
+        result = snd_pcm_hw_params_set_period_size_near(_pcm, _parameters, ref periodSize, ref dir);
         ThrowIfError(result, "Unable to set period size");
 
-        result = snd_pcm_hw_params(_pcm, parameters);
+        result = snd_pcm_hw_params(_pcm, _parameters);
         ThrowIfError(result, "Unable to send Alsa params");
 
-        //result = snd_pcm_hw_params_free(parameters);
-        //ThrowIfError(result, "Unable to free parameters buffer");
+        snd_pcm_hw_params_free(_parameters);
     }
 
     private Thread CreateQueueWorkerThread() => new(QueueWorker)
@@ -128,6 +122,19 @@ internal sealed class AlsaPlayer : IAudioPlayer
         IsBackground = true,
         Priority = ThreadPriority.AboveNormal
     };
+
+    private void Close()
+    {
+        if (_pcm == IntPtr.Zero)
+        {
+            return;
+        }
+
+        var result = snd_pcm_close(_pcm);
+        ThrowIfError(result, "Unable to close PCM");
+
+        _pcm = IntPtr.Zero;
+    }
 
     private void QueueWorker()
     {
@@ -152,9 +159,8 @@ internal sealed class AlsaPlayer : IAudioPlayer
                 var result = snd_pcm_writei(_pcm, _audioData, (ulong)(audioDataLength / _channelCount));
                 if (result == -32)
                 {
-                    // Buffer underrun recovery
                     result = snd_pcm_recover(_pcm, result, 0);
-                    ThrowIfError(result, "Unable to recover");
+                    ThrowIfError(result, "Unable to recover from buffer underrun");
                 }
             }
         }

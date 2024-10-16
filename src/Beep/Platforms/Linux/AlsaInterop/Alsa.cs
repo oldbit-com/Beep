@@ -31,7 +31,7 @@ internal static partial class Alsa
     internal static partial int snd_pcm_hw_params_malloc(ref IntPtr @params);
 
     [LibraryImport(AlsaLibrary)]
-    internal static partial int snd_pcm_hw_params_free(IntPtr @params);
+    internal static partial void snd_pcm_hw_params_free(IntPtr @params);
 
     [LibraryImport(AlsaLibrary)]
     internal static partial int snd_pcm_hw_params_any(IntPtr pcm, IntPtr @params);
