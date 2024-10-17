@@ -14,11 +14,15 @@
         <Description>Simple cross-platform library for playing PCM audio. Uses native frameworks for audio playback.</Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageProjectUrl>https://github.com/oldbit-com/Beep</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/oldbit-com/Beep/blob/main/LICENSE</PackageLicenseUrl>
+        <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>
         <InternalsVisibleTo Include="OldBit.Beep.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="icon.png" Pack="true" PackagePath=""/>
     </ItemGroup>
 
 </Project>

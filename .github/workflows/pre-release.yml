@@ -27,4 +27,4 @@ jobs:
         run: dotnet pack -c Release /p:Version=${VERSION} --no-restore --output .
 
       - name: Push
-        run: dotnet nuget push OldBit.Beep.${VERSION}.nupkg --source https://nuget.pkg.github.com/oldbit-com/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet nuget push OldBit.Beep.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }}
