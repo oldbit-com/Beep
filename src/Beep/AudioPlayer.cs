@@ -31,7 +31,7 @@ public class AudioPlayer : IDisposable
         playerOptions ??= PlayerOptions.Default;
 
         _volumeFilter = new VolumeFilter(50);
-        _pcmDataReaderPool = new PcmDataReaderPool(playerOptions.MaxQueueSize, audioFormat, _volumeFilter);
+        _pcmDataReaderPool = new PcmDataReaderPool(playerOptions.BufferQueueSize, audioFormat, _volumeFilter);
 
         IAudioPlayer audioPlayer;
         if (OperatingSystem.IsMacOS())
@@ -48,7 +48,7 @@ public class AudioPlayer : IDisposable
         }
         else
         {
-            throw new PlatformNotSupportedException($"The current platform is not supported.");
+            throw new PlatformNotSupportedException($"The {Environment.OSVersion.VersionString} platform is not supported.");
         }
 
         _audioPlayer = audioPlayer;

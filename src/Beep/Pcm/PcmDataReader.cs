@@ -22,9 +22,9 @@ internal sealed class PcmDataReader
         _sampleSizeInBytes = audioFormat.GetByteSize();
     }
 
-    internal int ReadFrames(Span<float> destination, int frameCount)
+    internal int ReadSamples(Span<float> destination, int sampleCount)
     {
-        var data = _data.Skip(_position).Take(frameCount * _sampleSizeInBytes).ToArray();
+        var data = _data.Skip(_position).Take(sampleCount * _sampleSizeInBytes).ToArray();
         _position += data.Length;
 
         var count = data.Length;
@@ -35,7 +35,7 @@ internal sealed class PcmDataReader
             return 0;
         }
 
-        var offset = 0;
+        var actualCount = 0;
 
         for (var i = 0; i < count; i += _sampleSizeInBytes)
         {
@@ -49,10 +49,10 @@ internal sealed class PcmDataReader
 
             value = _volumeFilter.Apply(value);
 
-            destination[offset++] = value;
+            destination[actualCount++] = value;
         }
 
-        return offset;
+        return actualCount;
     }
 
     internal IEnumerable<byte> Data

@@ -29,7 +29,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
         _channelCount = channelCount;
         _frameSize = channelCount * FloatType.SizeInBytes;
 
-        _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.MaxQueueSize)
+        _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.BufferQueueSize)
         {
             SingleReader = true,
             SingleWriter = true,
@@ -149,7 +149,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
 
             while (_isQueueRunning)
             {
-                var audioDataLength = samples.ReadFrames(_audioData, _audioData.Length);
+                var audioDataLength = samples.ReadSamples(_audioData, _audioData.Length);
 
                 if (audioDataLength == 0)
                 {

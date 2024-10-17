@@ -15,10 +15,10 @@ public sealed class PlayerOptions
     /// <summary>
     /// Gets or sets the maximum number of audio buffers in the queue. Default is 4.
     /// </summary>
-    public int MaxQueueSize { get; set; } = 4;
+    public int BufferQueueSize { get; set; } = 4;
 
     /// <summary>
-    /// Gets or sets the maximum number of audio buffers. Default is 4. This setting applies to macOS only.
+    /// Gets or sets the maximum number of audio buffers. Default is 4.
     /// </summary>
     /// <remarks>
     /// This setting applies to AudioToolbox (macOS) only.

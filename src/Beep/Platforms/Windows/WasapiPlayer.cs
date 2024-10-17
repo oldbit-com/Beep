@@ -30,7 +30,7 @@ internal class CoreAudioPlayer : IAudioPlayer
         _frameSize = channelCount * FloatType.SizeInBytes;
         _channelCount = channelCount;
 
-        _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.MaxQueueSize)
+        _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.BufferQueueSize)
         {
             SingleReader = true,
             SingleWriter = true,
@@ -124,7 +124,7 @@ internal class CoreAudioPlayer : IAudioPlayer
                     continue;
                 }
 
-                var audioDataLength = samples.ReadFrames(_audioData, framesAvailable * _channelCount);
+                var audioDataLength = samples.ReadSamples(_audioData, framesAvailable * _channelCount);
                 if (audioDataLength == 0)
                 {
                     break;
