@@ -9,9 +9,9 @@ internal static partial class ClassActivator
 
     private static readonly ComWrappers ComWrappers = new StrategyBasedComWrappers();
 
-    internal static I Activate<I>(string clsid, string iid) => Activate<I>(new Guid(clsid), new Guid(iid));
+    internal static T Activate<T>(string clsid, string iid) => Activate<T>(new Guid(clsid), new Guid(iid));
 
-    private static I Activate<I>(Guid clsid, Guid iid)
+    private static T Activate<T>(Guid clsid, Guid iid)
     {
         var result = CoCreateInstance(ref clsid, IntPtr.Zero, ClsCtxInprocServer, ref iid, out var obj);
 
@@ -20,7 +20,7 @@ internal static partial class ClassActivator
             Marshal.ThrowExceptionForHR(result);
         }
 
-        return (I)ComWrappers.GetOrCreateObjectForComInstance(obj, CreateObjectFlags.None);
+        return (T)ComWrappers.GetOrCreateObjectForComInstance(obj, CreateObjectFlags.None);
     }
 
     [LibraryImport("ole32")]
