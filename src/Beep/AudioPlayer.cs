@@ -23,7 +23,7 @@ public class AudioPlayer : IDisposable
     /// <param name="sampleRate">The sample rate of the audio data. Defaults to 44100 Hz.</param>
     /// <param name="channelCount">The number of audio channels. Defaults to 2 for stereo sound.</param>
     /// <param name="playerOptions">Optional player options to customize the behavior of the audio player. If not provided, default options are used.</param>
-    /// <exception cref="PlatformNotSupportedException">Thrown when the current platform is not supported.</exception>
+    /// <exception cref="PlatformNotSupportedException">Thrown when the current platform is not supported. </exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when arguments are not valid.</exception>
     public AudioPlayer(AudioFormat audioFormat, int sampleRate = 44100, int channelCount = 2, PlayerOptions? playerOptions = null)
     {
@@ -34,6 +34,7 @@ public class AudioPlayer : IDisposable
         _pcmDataReaderPool = new PcmDataReaderPool(playerOptions.BufferQueueSize, audioFormat, _volumeFilter);
 
         IAudioPlayer audioPlayer;
+
         if (OperatingSystem.IsMacOS())
         {
             audioPlayer = new AudioQueuePlayer(sampleRate, channelCount, playerOptions);
@@ -48,7 +49,12 @@ public class AudioPlayer : IDisposable
         }
         else
         {
-            throw new PlatformNotSupportedException($"The {Environment.OSVersion.VersionString} platform is not supported.");
+            if (playerOptions.ThrowOnUnsupportedPlatform)
+            {
+                throw new PlatformNotSupportedException($"The {Environment.OSVersion.VersionString} platform is not supported.");
+            }
+
+            audioPlayer = new SilentAudioPlayer();
         }
 
         _audioPlayer = audioPlayer;
@@ -71,6 +77,11 @@ public class AudioPlayer : IDisposable
             _volumeFilter.Volume = value;
         }
     }
+
+    /// <summary>
+    /// Gets a value indicating whether the current platform is supported.
+    /// </summary>
+    public bool IsPlatformSupported => _audioPlayer is not SilentAudioPlayer;
 
     /// <summary>
     /// Enqueues the audio data to be played.

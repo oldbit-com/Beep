@@ -25,6 +25,11 @@ public sealed class PlayerOptions
     /// </remarks>
     public int MaxBuffers { get; set; } = 4;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether to throw an exception when the platform is not supported.
+    /// </summary>
+    public bool ThrowOnUnsupportedPlatform { get; set; }
+
     internal void ThrowIfNotValid()
     {
         if (BufferSizeInBytes < 1)

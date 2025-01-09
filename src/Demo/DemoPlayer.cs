@@ -30,7 +30,12 @@ public class DemoPlayer(AudioFormat audioFormat, int sampleRate, int channelCoun
         var waveGenerator = WaveGeneratorFactory.CreateWaveGenerator(audioFormat, waveType, sampleRate, channelCount);
         var audioData = waveGenerator.Generate(note, TimeSpan.FromSeconds(3));
 
-        using var audioPlayer = new AudioPlayer(audioFormat, sampleRate, channelCount, new PlayerOptions { BufferSizeInBytes = 32768 });
+        using var audioPlayer = new AudioPlayer(audioFormat, sampleRate, channelCount,
+            new PlayerOptions
+            {
+                BufferSizeInBytes = 32768,
+                ThrowOnUnsupportedPlatform = true,
+            });
         audioPlayer.Volume = volume;
 
         audioPlayer.Start();
