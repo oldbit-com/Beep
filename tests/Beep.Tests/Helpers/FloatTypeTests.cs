@@ -1,5 +1,5 @@
-using FluentAssertions;
 using OldBit.Beep.Extensions;
+using Shouldly;
 
 namespace OldBit.Beep.Tests.Helpers;
 
@@ -13,6 +13,6 @@ public class FloatTypeTests
     {
         var numberOfBytes = audioFormat.GetByteSize();
 
-        numberOfBytes.Should().Be(expectedBytes);
+        numberOfBytes.ShouldBe(expectedBytes);
     }
 }

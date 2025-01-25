@@ -1,6 +1,6 @@
-using FluentAssertions;
 using OldBit.Beep.Filters;
 using OldBit.Beep.Pcm;
+using Shouldly;
 
 namespace OldBit.Beep.Tests.Pcm;
 
@@ -17,8 +17,8 @@ public class PcmDataReaderTests
         var buffer = new float[10];
         var count = reader.ReadSamples(buffer, buffer.Length);
 
-        count.Should().Be(4);
-        buffer.Should().BeEquivalentTo([-0.9921875f, -0.609375f, -0.21875f, 0.9921875f, 0, 0, 0, 0, 0, 0]);
+        count.ShouldBe(4);
+        buffer.ShouldBeEquivalentTo(new[] { -0.9921875f, -0.609375f, -0.21875f, 0.9921875f, 0, 0, 0, 0, 0, 0 });
     }
 
     [Fact]
@@ -26,14 +26,14 @@ public class PcmDataReaderTests
     {
         var reader = new PcmDataReader(AudioFormat.Signed16BitIntegerLittleEndian, new VolumeFilter(100))
         {
-            Data = new byte[] { 1, 50, 100, 255 }
+            Data = [1, 50, 100, 255]
         };
 
         var buffer = new float[10];
         var count = reader.ReadSamples(buffer, buffer.Length);
 
-        count.Should().Be(2);
-        buffer.Should().BeEquivalentTo([0.39065552f, -0.004760742f, 0, 0, 0, 0, 0, 0, 0, 0]);
+        count.ShouldBe(2);
+        buffer.ShouldBeEquivalentTo(new[] { 0.39065552f, -0.004760742f, 0, 0, 0, 0, 0, 0, 0, 0 });
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class PcmDataReaderTests
         var buffer = new float[10];
         var count = reader.ReadSamples(buffer, buffer.Length);
 
-        count.Should().Be(1);
-        buffer.Should().BeEquivalentTo([0.5f, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        count.ShouldBe(1);
+        buffer.ShouldBeEquivalentTo(new[] { 0.5f, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
     }
 }
