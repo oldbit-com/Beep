@@ -11,7 +11,7 @@ public class PcmDataReaderTests
     {
         var reader = new PcmDataReader(AudioFormat.Unsigned8Bit, new VolumeFilter(100))
         {
-            Data = new byte[] { 1, 50, 100, 255 }
+            Data = [1, 50, 100, 255]
         };
 
         var buffer = new float[10];
@@ -41,7 +41,7 @@ public class PcmDataReaderTests
     {
         var reader = new PcmDataReader(AudioFormat.Float32BitLittleEndian, new VolumeFilter(100))
         {
-            Data = new byte[] { 0, 0, 0, 63 }
+            Data = [0, 0, 0, 63]
         };
 
         var buffer = new float[10];
