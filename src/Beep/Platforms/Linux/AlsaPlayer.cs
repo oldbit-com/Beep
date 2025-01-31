@@ -13,7 +13,6 @@ internal sealed class AlsaPlayer : IAudioPlayer
 {
     private const int Period = 2;
 
-    private readonly int _frameSize;
     private readonly Channel<PcmDataReader> _samplesQueue;
     private readonly Thread _queueWorker;
     private readonly float[] _audioData;
@@ -27,7 +26,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
     internal AlsaPlayer(int sampleRate, int channelCount, PlayerOptions playerOptions)
     {
         _channelCount = channelCount;
-        _frameSize = channelCount * FloatType.SizeInBytes;
+        var frameSize = channelCount * FloatType.SizeInBytes;
 
         _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.BufferQueueSize)
         {
@@ -36,7 +35,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
             FullMode = BoundedChannelFullMode.Wait
         });
 
-        var periodSize = playerOptions.BufferSizeInBytes / (_frameSize * Period);
+        var periodSize = playerOptions.BufferSizeInBytes / (frameSize * Period);
         var bufferSize = periodSize * Period;
 
         try
@@ -157,6 +156,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
                 }
 
                 var result = snd_pcm_writei(_pcm, _audioData, (ulong)(audioDataLength / _channelCount));
+
                 if (result == -32)
                 {
                     result = snd_pcm_recover(_pcm, result, 0);
