@@ -76,6 +76,8 @@ internal sealed class AlsaPlayer : IAudioPlayer
         Close();
     }
 
+    public event EventHandler<PlayerErrorEventArgs>? OnError;
+
     public void Dispose() => Close();
 
     private void Initialize(int sampleRate, int channelCount, ulong periodSize, ulong bufferSize)
@@ -116,7 +118,17 @@ internal sealed class AlsaPlayer : IAudioPlayer
         snd_pcm_hw_params_free(_parameters);
     }
 
-    private Thread CreateQueueWorkerThread() => new(QueueWorker)
+    private Thread CreateQueueWorkerThread() => new(() =>
+    {
+        try
+        {
+            RunWorker();
+        }
+        catch (Exception ex)
+        {
+            OnError?.Invoke(this, new PlayerErrorEventArgs(ex));
+        }
+    })
     {
         IsBackground = true,
         Priority = ThreadPriority.AboveNormal
@@ -135,7 +147,7 @@ internal sealed class AlsaPlayer : IAudioPlayer
         _pcm = IntPtr.Zero;
     }
 
-    private void QueueWorker()
+    private void RunWorker()
     {
         _queueWorkerStopped = false;
 

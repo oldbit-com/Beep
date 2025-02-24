@@ -97,15 +97,27 @@ internal class CoreAudioPlayer : IAudioPlayer
         _audioClient.Reset();
     }
 
+    public event EventHandler<PlayerErrorEventArgs>? OnError;
+
     public void Dispose() { }
 
-    private Thread CreateQueueWorkerThread() => new(QueueWorker)
+    private Thread CreateQueueWorkerThread() => new(() =>
+    {
+        try
+        {
+            RunWorker();
+        }
+        catch (Exception ex)
+        {
+            OnError?.Invoke(this, new PlayerErrorEventArgs(ex));
+        }
+    })
     {
         IsBackground = true,
         Priority = ThreadPriority.AboveNormal
     };
 
-    private void QueueWorker()
+    private void RunWorker()
     {
         while (_isQueueRunning)
         {

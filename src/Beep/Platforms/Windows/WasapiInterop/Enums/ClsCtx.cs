@@ -1,7 +1,7 @@
 namespace OldBit.Beep.Platforms.Windows.WasapiInterop.Enums;
 
 [Flags]
-public enum ClsCtx : uint
+internal enum ClsCtx : uint
 {
     InprocServer = 0x1,
 

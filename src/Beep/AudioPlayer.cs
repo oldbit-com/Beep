@@ -17,6 +17,11 @@ public class AudioPlayer : IDisposable
     private bool _isStarted;
 
     /// <summary>
+    /// Occurs when an error occurs during audio playback.
+    /// </summary>
+    public event EventHandler<PlayerErrorEventArgs>? OnError;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AudioPlayer"/> class with specified audio format, sample rate, channel count, and player options.
     /// </summary>
     /// <param name="audioFormat">The audio format to be used by the audio player.</param>
@@ -58,6 +63,7 @@ public class AudioPlayer : IDisposable
         }
 
         _audioPlayer = audioPlayer;
+        _audioPlayer.OnError += (sender, args) => { OnError?.Invoke(sender, args); };
     }
 
     /// <summary>
@@ -87,10 +93,11 @@ public class AudioPlayer : IDisposable
     /// Enqueues the audio data to be played.
     /// </summary>
     /// <param name="data">The audio data to enqueue.</param>
+    /// <param name="count">The number of bytes to play. If set to -1, it means all..</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-    public async Task EnqueueAsync(IEnumerable<byte> data, CancellationToken cancellationToken = default)
+    public async Task EnqueueAsync(byte[] data, int count = -1, CancellationToken cancellationToken = default)
     {
-        var reader = _pcmDataReaderPool.GetReader(data);
+        var reader = _pcmDataReaderPool.GetReader(data, count);
 
         await _audioPlayer.EnqueueAsync(reader, cancellationToken);
     }
@@ -99,12 +106,13 @@ public class AudioPlayer : IDisposable
     /// Attempts to enqueue the audio data to be played.
     /// </summary>
     /// <param name="data">The audio data to enqueue.</param>
+    /// <param name="count">The number of bytes to play. If set to -1, it means all..</param>
     /// <returns>
     /// true if the audio data was successfully enqueued; otherwise, false.
     /// </returns>
-    public bool TryEnqueue(IEnumerable<byte> data)
+    public bool TryEnqueue(byte[] data, int count = -1)
     {
-        var reader = _pcmDataReaderPool.GetReader(data);
+        var reader = _pcmDataReaderPool.GetReader(data, count);
 
         return _audioPlayer.TryEnqueue(reader);
     }
@@ -137,6 +145,9 @@ public class AudioPlayer : IDisposable
         _isStarted = false;
     }
 
+    /// <summary>
+    /// Disposes the audio player.
+    /// </summary>
     public void Dispose()
     {
         _audioPlayer.Dispose();

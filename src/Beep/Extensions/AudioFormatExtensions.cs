@@ -1,13 +1,15 @@
 namespace OldBit.Beep.Extensions;
 
+/// <summary>
+/// Extensions for the <see cref="AudioFormat"/> enum.
+/// </summary>
 public static class AudioFormatExtensions
 {
     /// <summary>
-    /// Gets the byte size of a sample for the specified audio format.
+    /// Gets the byte size of the specified <see cref="AudioFormat"/>.
     /// </summary>
     /// <param name="format">The audio format.</param>
-    /// <returns>The byte size of a sample for the specified audio format.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when an unsupported audio format is provided.</exception>
+    /// <returns>The byte size of the specified audio format.</returns>
     public static int GetByteSize(this AudioFormat format) => format switch
     {
         AudioFormat.Unsigned8Bit => 1,

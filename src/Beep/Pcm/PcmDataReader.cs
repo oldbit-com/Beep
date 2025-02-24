@@ -12,8 +12,9 @@ internal sealed class PcmDataReader
     private readonly AudioFormat _audioFormat;
     private readonly VolumeFilter _volumeFilter;
     private readonly int _sampleSizeInBytes;
-    private IEnumerable<byte> _data = [];
+    private byte[] _data = [];
     private int _position;
+    private int _count;
 
     internal PcmDataReader(AudioFormat audioFormat, VolumeFilter volumeFilter)
     {
@@ -24,7 +25,7 @@ internal sealed class PcmDataReader
 
     internal int ReadSamples(Span<float> destination, int sampleCount)
     {
-        var data = _data.Skip(_position).Take(sampleCount * _sampleSizeInBytes).ToArray();
+        var data = new ReadOnlySpan<byte>(_data, _position, Math.Min(sampleCount * _sampleSizeInBytes, _count - _position));
         _position += data.Length;
 
         var count = data.Length;
@@ -42,8 +43,8 @@ internal sealed class PcmDataReader
             var value = _audioFormat switch
             {
                 AudioFormat.Unsigned8Bit => data[i] / 128f - 1,
-                AudioFormat.Signed16BitIntegerLittleEndian => BitConverter.ToInt16(data, i) / 32768f,
-                AudioFormat.Float32BitLittleEndian => BitConverter.ToSingle(data, i),
+                AudioFormat.Signed16BitIntegerLittleEndian => BitConverter.ToInt16(data.Slice(i, 2)) / 32768f,
+                AudioFormat.Float32BitLittleEndian => BitConverter.ToSingle(data.Slice(i, 4)),
                 _ => throw new ArgumentException($"Invalid audio format: {_audioFormat}.")
             };
 
@@ -55,12 +56,10 @@ internal sealed class PcmDataReader
         return actualCount;
     }
 
-    internal IEnumerable<byte> Data
+    internal void SetData(byte[] data, int count = -1)
     {
-        set
-        {
-            _data = value;
-            _position = 0;
-        }
+        _data = data;
+        _count = count == -1 ? _data.Length : count;
+        _position = 0;
     }
 }

@@ -1,6 +1,6 @@
 namespace OldBit.Beep.Helpers;
 
-public static class FloatType
+internal static class FloatType
 {
     /// <summary>
     /// The size of a float in bytes.

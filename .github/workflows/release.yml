@@ -1,35 +1,52 @@
-name: Release NuGet package
+name: Publish NuGet package
 
 on:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+      publishPreRelease:
+        description: 'Publish pre-release'
+        type: boolean
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Verify commit exists in origin/main
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.1.11
+        with:
+          versionSpec: '6.0.x'
+
+      - name: Determine version
+        id: version_step
+        uses: gittools/actions/gitversion/execute@v3.1.11
+
+      - name: Set package version
         run: |
-          git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
-          git branch --remote --contains | grep origin/main
+          version=${{ steps.version_step.outputs.majorMinorPatch }}
+          preRelease=${{ steps.version_step.outputs.preReleaseTag }}
+          
+          if [ "${{ inputs.publishPreRelease }}" == "true" ]; then
+            echo "PACKAGE_VERSION=$version-pre.${{ steps.version_step.outputs.preReleaseNumber }}" >> $GITHUB_ENV
+          else
+            echo "PACKAGE_VERSION=$version" >> $GITHUB_ENV
+          fi
 
-      - name: Set VERSION variable from tag
-        run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
-
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore
 
       - name: Build
-        run: dotnet build -c Release /p:Version=${VERSION}
+        run: dotnet build -c Release /p:Version=${PACKAGE_VERSION}
 
       - name: Test
-        run: dotnet test -c Release /p:Version=${VERSION} --no-restore --verbosity normal
+        run: dotnet test -c Release /p:Version=${PACKAGE_VERSION} --no-restore --verbosity normal
 
       - name: Pack
-        run: dotnet pack -c Release /p:Version=${VERSION} --no-restore --output .
+        run: dotnet pack -c Release /p:Version=${PACKAGE_VERSION} --no-restore --output .
 
       - name: Push
-        run: dotnet nuget push OldBit.Beep.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }}
+        run: dotnet nuget push OldBit.Beep.${PACKAGE_VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }}

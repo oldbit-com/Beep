@@ -9,7 +9,7 @@ namespace OldBit.Beep.Pcm;
 internal sealed class PcmDataReaderPool
 {
     private readonly List<PcmDataReader> _pool = [];
-    private int _position;
+    private int _index;
 
     public PcmDataReaderPool(int capacity, AudioFormat audioFormat, VolumeFilter volumeFilter)
     {
@@ -19,12 +19,12 @@ internal sealed class PcmDataReaderPool
         }
     }
 
-    internal PcmDataReader GetReader(IEnumerable<byte> data)
+    internal PcmDataReader GetReader(byte[] data, int count)
     {
-        var reader = _pool[_position];
-        reader.Data = data;
+        var reader = _pool[_index];
+        reader.SetData(data, count);
 
-        _position = (_position + 1) % _pool.Count;
+        _index = (_index + 1) % _pool.Count;
 
         return reader;
     }

@@ -84,13 +84,24 @@ internal sealed class AudioQueuePlayer : IAudioPlayer
         StopAudioQueue();
     }
 
-    private Thread CreateQueueWorkerThread() => new(QueueWorker)
+    public event EventHandler<PlayerErrorEventArgs>? OnError;
+
+    private Thread CreateQueueWorkerThread() => new(RunWorker)
     {
         IsBackground = true,
-        Priority = ThreadPriority.AboveNormal
+        Priority = ThreadPriority.AboveNormal,
+        Name = "AudioQueuePlayerWorker"
     };
 
-    private async void QueueWorker()
+    private void RunWorker() => RunWorkerTask().ContinueWith(task =>
+    {
+        if (task.IsFaulted)
+        {
+            OnError?.Invoke(this, new PlayerErrorEventArgs(task.Exception));
+        }
+    }, TaskContinuationOptions.OnlyOnFaulted);
+
+    private async Task RunWorkerTask()
     {
         _queueWorkerStopped = false;
 
@@ -125,6 +136,7 @@ internal sealed class AudioQueuePlayer : IAudioPlayer
             // We need to keep sending empty buffers to the audio queue to keep it running
             // if there is no data to play
             Array.Fill(_audioData, 0);
+
             await Enqueue(_audioData, _audioData.Length / 4, CancellationToken.None);
         }
 
@@ -167,6 +179,7 @@ internal sealed class AudioQueuePlayer : IAudioPlayer
     private void StopAudioQueue()
     {
         var status = AudioToolbox.AudioQueueStop(_audioQueue, true);
+
         if (status != 0)
         {
             throw new AudioPlayerException($"Failed to stop audio queue: {status}", status);

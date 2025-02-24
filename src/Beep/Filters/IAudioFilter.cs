@@ -1,6 +1,6 @@
 namespace OldBit.Beep.Filters;
 
-public interface IAudioFilter
+internal interface IAudioFilter
 {
     float Apply(float value);
 }

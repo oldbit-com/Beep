@@ -28,7 +28,7 @@ public class DemoPlayer(AudioFormat audioFormat, int sampleRate, int channelCoun
     private async Task StartPlayerAsync(float note)
     {
         var waveGenerator = WaveGeneratorFactory.CreateWaveGenerator(audioFormat, waveType, sampleRate, channelCount);
-        var audioData = waveGenerator.Generate(note, TimeSpan.FromSeconds(3));
+        var audioData = waveGenerator.Generate(note, TimeSpan.FromSeconds(3)).ToArray();
 
         using var audioPlayer = new AudioPlayer(audioFormat, sampleRate, channelCount,
             new PlayerOptions

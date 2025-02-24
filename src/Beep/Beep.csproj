@@ -11,11 +11,14 @@
         <Title>OldBit.Beep</Title>
         <Authors>Wojciech Sobieszek</Authors>
         <RepositoryUrl>https://github.com/oldbit-com/Beep</RepositoryUrl>
-        <Description>Simple cross-platform library for playing PCM audio. Uses native frameworks for audio playback.</Description>
+        <Description>Simple cross-platform library for playing PCM audio. Uses native operating system APIs for audio playback.</Description>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageProjectUrl>https://github.com/oldbit-com/Beep</PackageProjectUrl>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageTags>audio,audio player,cross-platform, audio toolbox, alsa, wasapi</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

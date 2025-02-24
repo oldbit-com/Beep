@@ -9,10 +9,8 @@ public class PcmDataReaderTests
     [Fact]
     public void Unsigned8Bit_ShouldReturnFloatSamples()
     {
-        var reader = new PcmDataReader(AudioFormat.Unsigned8Bit, new VolumeFilter(100))
-        {
-            Data = [1, 50, 100, 255]
-        };
+        var reader = new PcmDataReader(AudioFormat.Unsigned8Bit, new VolumeFilter(100));
+        reader.SetData([1, 50, 100, 255]);
 
         var buffer = new float[10];
         var count = reader.ReadSamples(buffer, buffer.Length);
@@ -24,10 +22,8 @@ public class PcmDataReaderTests
     [Fact]
     public void Signed16BitIntegerLittleEndian_ShouldReturnFloatSamples()
     {
-        var reader = new PcmDataReader(AudioFormat.Signed16BitIntegerLittleEndian, new VolumeFilter(100))
-        {
-            Data = [1, 50, 100, 255]
-        };
+        var reader = new PcmDataReader(AudioFormat.Signed16BitIntegerLittleEndian, new VolumeFilter(100));
+        reader.SetData([1, 50, 100, 255]);
 
         var buffer = new float[10];
         var count = reader.ReadSamples(buffer, buffer.Length);
@@ -39,10 +35,8 @@ public class PcmDataReaderTests
     [Fact]
     public void Float32BitLittleEndian_ShouldReturnFloatSamples()
     {
-        var reader = new PcmDataReader(AudioFormat.Float32BitLittleEndian, new VolumeFilter(100))
-        {
-            Data = [0, 0, 0, 63]
-        };
+        var reader = new PcmDataReader(AudioFormat.Float32BitLittleEndian, new VolumeFilter(100));
+        reader.SetData([0, 0, 0, 63]);
 
         var buffer = new float[10];
         var count = reader.ReadSamples(buffer, buffer.Length);
