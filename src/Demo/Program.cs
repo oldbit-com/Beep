@@ -4,42 +4,64 @@ using Demo;
 using Demo.Generator;
 using OldBit.Beep;
 
-var audioFormatOption = new Option<string>("--format", () => "f32le", "The format of the output file")
-    .FromAmong("f32le", "s16le", "u8");
-audioFormatOption.AddAlias("-f");
+var audioFormatOption = new Option<string>("--format", "-f")
+    {
+        Description = "The format of the output file",
+        DefaultValueFactory = _ => "f32le"
+    }
+    .AcceptOnlyFromAmong("f32le", "s16le", "u8");
 
-var sampleRateOption = new Option<int>("--rate", () => 44100, "The sample rate");
-sampleRateOption.AddAlias("-r");
-
-var channelsOption = new Option<int>("--channels", () => 2, "The number of channels");
-channelsOption.AddAlias("-c");
-
-var waveOption = new Option<string>("--wave", () => "sine", "The type of wave to generate")
-    .FromAmong("sine", "square");
-waveOption.AddAlias("-w");
-
-var volumeOption = new Option<int>("--vol", () => 50, "The volume level");
-volumeOption.AddValidator(result =>
+var sampleRateOption = new Option<int>("--rate", "-r")
 {
-    var volume = result.GetValueForOption(volumeOption);
+    Description = "The sample rate",
+    DefaultValueFactory = _ => 44100
+};
+
+var channelsOption = new Option<int>("--channels", "-c")
+{
+    Description = "The number of channels",
+    DefaultValueFactory = _ => 2
+};
+
+var waveOption = new Option<string>("--wave", "-w")
+    {
+        Description = "The type of wave to generate",
+        DefaultValueFactory = _ => "sine"
+    }
+    .AcceptOnlyFromAmong("sine", "square");
+
+var volumeOption = new Option<int>("--vol", "-v")
+{
+    Description = "The volume level",
+    DefaultValueFactory = _ => 50
+};
+volumeOption.Validators.Add(result =>
+{
+    var volume = result.GetValue(volumeOption);
+
     if (volume is < 0 or > 100)
     {
-        result.ErrorMessage = "Volume must be between 0 and 100";
+        result.AddError("Volume must be between 0 and 100");
     }
 });
-volumeOption.AddAlias("-v");
 
 var rootCommand = new RootCommand("Plays a demo audio.");
-rootCommand.AddOption(audioFormatOption);
-rootCommand.AddOption(sampleRateOption);
-rootCommand.AddOption(channelsOption);
-rootCommand.AddOption(waveOption);
-rootCommand.AddOption(volumeOption);
+rootCommand.Options.Add(audioFormatOption);
+rootCommand.Options.Add(sampleRateOption);
+rootCommand.Options.Add(channelsOption);
+rootCommand.Options.Add(waveOption);
+rootCommand.Options.Add(volumeOption);
 
-rootCommand.SetHandler(async (audioFormat, sampleRate, channels, waveType, volume) =>
+rootCommand.SetAction(async parseResult =>
 {
+    var audioFormat = parseResult.GetRequiredValue(audioFormatOption);
+    var sampleRate = parseResult.GetRequiredValue(sampleRateOption);
+    var channels = parseResult.GetRequiredValue(channelsOption);
+    var waveType = parseResult.GetRequiredValue(waveOption);
+    var volume = parseResult.GetRequiredValue(volumeOption);
+
     Console.WriteLine("Playing demo audio...");
-    Console.WriteLine($"Format: {audioFormat}  Sample rate: {sampleRate}  Channels: {channels}  WaveType: {waveType}  Volume: {volume}");
+    Console.WriteLine($"Format: {audioFormat} | Sample rate: {sampleRate} | Channels: {channels} | WaveType: {waveType} | Volume: {volume}");
 
     var parsedAudioFormat = audioFormat switch
     {
@@ -56,7 +78,8 @@ rootCommand.SetHandler(async (audioFormat, sampleRate, channels, waveType, volum
     await demoPlayer.PlayAsync();
 
     Console.WriteLine($"Finished playing audio in {timer.ElapsedMilliseconds}ms.");
+});
 
-}, audioFormatOption, sampleRateOption, channelsOption, waveOption, volumeOption);
+var parseResult = rootCommand.Parse(args);
 
-await rootCommand.InvokeAsync(args);
+await parseResult.InvokeAsync();
