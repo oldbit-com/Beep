@@ -6,6 +6,9 @@ internal static partial class Alsa
 {
     private const string AlsaLibrary = "libasound";
 
+    internal const int EAGAIN = 11;
+    internal const int EPIPE = 32;
+
     [LibraryImport(AlsaLibrary)]
     internal static partial int snd_pcm_open(ref IntPtr pcm, [MarshalAs(UnmanagedType.LPStr)]  string name, PcmStream stream, int mode);
 
@@ -20,6 +23,9 @@ internal static partial class Alsa
 
     [LibraryImport(AlsaLibrary)]
     internal static partial int snd_pcm_prepare(IntPtr pcm);
+
+    [LibraryImport(AlsaLibrary)]
+    internal static partial int snd_pcm_wait(IntPtr pcm, int timeout);
 
     [LibraryImport(AlsaLibrary)]
     internal static partial int snd_pcm_close(IntPtr pcm);

@@ -167,12 +167,35 @@ internal sealed class AlsaPlayer : IAudioPlayer
                     break;
                 }
 
-                var result = snd_pcm_writei(_pcm, _audioData, (ulong)(audioDataLength / _channelCount));
+                var framesToWrite = audioDataLength / _channelCount;
+                var frameOffset = 0;
 
-                if (result == -32)
+                unsafe
                 {
-                    result = snd_pcm_recover(_pcm, result, 0);
-                    ThrowIfError(result, "Unable to recover from buffer underrun");
+                    fixed (float* audioDataPtr = _audioData)
+                    {
+                        while (framesToWrite > 0)
+                        {
+                            var bufferOffset = audioDataPtr + frameOffset * _channelCount;
+                            var writtenCount = snd_pcm_writei(_pcm, new IntPtr(bufferOffset), (ulong)framesToWrite);
+
+                            switch (writtenCount)
+                            {
+                                case -EPIPE:
+                                    _ = snd_pcm_prepare(_pcm);
+                                    continue;
+
+                                case -EAGAIN:
+                                    _ = snd_pcm_wait(_pcm, 10);
+                                    continue;
+
+                                default:
+                                    frameOffset += writtenCount;
+                                    framesToWrite -= writtenCount;
+                                    break;
+                            }
+                        }
+                    }
                 }
             }
         }
