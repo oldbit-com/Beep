@@ -1,10 +1,10 @@
 # Beep Audio Player
 
-Beep is a simple cross-platform low level dotnet library for playing PCM audio.
+Beep is a simple cross-platform low-level dotnet library for playing PCM audio.
 
 It was inspired by [oto](https://github.com/ebitengine/oto) golang library that I used before. However, it is not a direct port of it.
-It has been created to be used by my ZX Spectrum emulator, hence the name Beep. I needed a simple way of playing 
-audio and couldn't find anything that would suit my needs.
+It has been created to be used by my [ZX Spectrum emulator](https://github.com/oldbit-com/Spectron), hence the name Beep. 
+I needed a simple way of playing audio and couldn't find anything that would suit my needs.
 
 I don't plan to add any advanced features to this library. It is quite challenging to implement a good audio library 
 that would work on all platforms. Each platform has its own way of handling audio and good examples are hard to find.
@@ -14,11 +14,11 @@ I've tested it on MacOS, Windows and Linux. But I can't guarantee that it will w
 ## Features
 - written in C# and .NET 8
 - no external dependencies other than native OS frameworks
-- cross-platform, currently supports MacOS, Windows and Linux
+- cross-platform, currently supports macOS, Windows and Linux
 - supports 8-bit unsigned, 16-bit signed and 32-bit float PCM data formats
 - simple volume control
 
-Internally it uses 32-bit float PCM audio format (little endian).
+Internally, it uses 32-bit float PCM audio format (little endian).
 
 ## Platforms:
 - [MacOS](#MacOS)
@@ -26,7 +26,7 @@ Internally it uses 32-bit float PCM audio format (little endian).
 - [Linux](#Linux)
 
 ### MacOS
-Audio playback is implemented using [AudioToolbox.framework](https://developer.apple.com/documentation/audiotoolbox). The framework is available on MacOS by default.
+Audio playback is implemented using [AudioToolbox.framework](https://developer.apple.com/documentation/audiotoolbox). The framework is available on macOS by default.
 
 ### Windows
 Audio playback is implemented using [WASAPI](https://docs.microsoft.com/en-us/windows/win32/coreaudio/wasapi). The framework is available on Windows by default.
@@ -70,4 +70,3 @@ audioPlayer.Stop();
 | `Unsigned8BitLittleEndian` | 8-bit unsigned PCM | 1 byte (0..255)         |
 | `Signed16BitLittleEndian`  | 16-bit signed PCM  | 2 bytes (-32768..32767) |
 | `Float32BitLittleEndian`   | 32-bit float PCM   | 4 bytes (-1.0..1.0)     |
-
