@@ -12,7 +12,7 @@ that would work on all platforms. Each platform has its own way of handling audi
 I've tested it on MacOS, Windows and Linux. But I can't guarantee that it will work on all systems.
 
 ## Features
-- written in C# and .NET 8
+- using C# 14 and .NET 10
 - no external dependencies other than native OS frameworks
 - cross-platform, currently supports macOS, Windows and Linux
 - supports 8-bit unsigned, 16-bit signed and 32-bit float PCM data formats
