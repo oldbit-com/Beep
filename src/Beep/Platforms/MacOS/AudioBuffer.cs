@@ -1,6 +1,6 @@
 namespace OldBit.Beep.Platforms.MacOS;
 
-internal class AudioBuffer
+internal sealed class AudioBuffer
 {
     private static readonly TimeSpan AudioQueueCallbackTimeout = TimeSpan.FromSeconds(15);
 

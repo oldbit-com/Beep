@@ -18,6 +18,7 @@ internal sealed class AudioQueuePlayer : IAudioPlayer
     private readonly Channel<PcmDataReader> _samplesQueue;
     private readonly Thread _queueWorker;
     private readonly float[] _audioData;
+    private readonly float[] _emptyAudioData;
 
     private GCHandle _gch;
     private bool _isQueueRunning;
@@ -27,6 +28,7 @@ internal sealed class AudioQueuePlayer : IAudioPlayer
     {
         _gch = GCHandle.Alloc(this);
         _audioData = new float[playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
+        _emptyAudioData  = new float[playerOptions.BufferSizeInBytes / FloatType.SizeInBytes];
 
         _samplesQueue = Channel.CreateBounded<PcmDataReader>(new BoundedChannelOptions(playerOptions.BufferQueueSize)
         {
@@ -122,9 +124,7 @@ internal sealed class AudioQueuePlayer : IAudioPlayer
 
             // We need to keep sending empty buffers to the audio queue to keep it running
             // if there is no data to play
-            Array.Fill(_audioData, 0);
-
-            await Enqueue(_audioData, _audioData.Length / 4, CancellationToken.None);
+            await Enqueue(_emptyAudioData, _emptyAudioData.Length / 4, CancellationToken.None);
         }
 
         _queueWorkerStopped = true;
