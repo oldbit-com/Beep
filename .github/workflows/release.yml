@@ -33,7 +33,7 @@ jobs:
           version="${version#v}"
           echo "PACKAGE_VERSION=$version" >> $GITHUB_ENV
           
-      - name: Validate version format
+      - name: Validate version format ${{ env.PACKAGE_VERSION }}
         run: |
           if ! [[ "$PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-preview[0-9]+)?$ ]]; then
             echo "❌ Invalid version format: $PACKAGE_VERSION"
@@ -54,15 +54,15 @@ jobs:
       - name: Restore
         run: dotnet restore
 
-      - name: Build
+      - name: Build ${{ env.PACKAGE_VERSION }}
         run: dotnet build -c Release /p:Version=${PACKAGE_VERSION}
 
-      - name: Test
+      - name: Test ${{ env.PACKAGE_VERSION }}
         run: dotnet test -c Release /p:Version=${PACKAGE_VERSION} --no-restore --verbosity normal
 
-      - name: Pack
+      - name: Pack ${{ env.PACKAGE_VERSION }}
         run: dotnet pack -c Release /p:Version=${PACKAGE_VERSION} --no-restore --output .
 
-      - name: Push
+      - name: Push ${{ env.PACKAGE_VERSION }}
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.pushEnabled }}
         run: dotnet nuget push OldBit.Beep.${PACKAGE_VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }}
