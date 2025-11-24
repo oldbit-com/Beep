@@ -1,16 +1,46 @@
 name: Publish NuGet package
 
 on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-preview*'
+
   workflow_dispatch:
     inputs:
-      publishPreRelease:
-        description: 'Publish pre-release'
+      version:
+        description: 'Version x.y.z-preview'
+        type: string
+        default: ''
+      pushEnabled:
+        description: 'Push Package'
         type: boolean
+        default: true
 
 jobs:
+
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Set package version
+        run: |
+          if [ "${{ inputs.version }}" == "" ]; then
+            version="${{ github.ref_name }}"
+          else
+            version="${{ inputs.version }}"
+          fi
+          
+          version="${version#v}"
+          echo "PACKAGE_VERSION=$version" >> $GITHUB_ENV
+          
+      - name: Validate version format
+        run: |
+          if ! [[ "$PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-preview[0-9]+)?$ ]]; then
+            echo "❌ Invalid version format: $PACKAGE_VERSION"
+            echo "Expected: x.y.z or x.y.z-previewN (digits only)"
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -20,26 +50,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3.1.11
-        with:
-          versionSpec: '6.0.x'
-
-      - name: Determine version
-        id: version_step
-        uses: gittools/actions/gitversion/execute@v3.1.11
-
-      - name: Set package version
-        run: |
-          version=${{ steps.version_step.outputs.majorMinorPatch }}
-          preRelease=${{ steps.version_step.outputs.preReleaseTag }}
-          
-          if [ "${{ inputs.publishPreRelease }}" == "true" ]; then
-            echo "PACKAGE_VERSION=$version-pre.${{ steps.version_step.outputs.preReleaseNumber }}" >> $GITHUB_ENV
-          else
-            echo "PACKAGE_VERSION=$version" >> $GITHUB_ENV
-          fi
 
       - name: Restore
         run: dotnet restore
@@ -54,4 +64,5 @@ jobs:
         run: dotnet pack -c Release /p:Version=${PACKAGE_VERSION} --no-restore --output .
 
       - name: Push
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.pushEnabled }}
         run: dotnet nuget push OldBit.Beep.${PACKAGE_VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }}
