@@ -9,16 +9,14 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version x.y.z-preview'
+        description: 'Version x.y.z-previewN'
         type: string
-        default: ''
+        default: 'v0.0.0-preview1'
       pushEnabled:
         description: 'Push Package'
         type: boolean
         default: true
-
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -54,15 +52,15 @@ jobs:
       - name: Restore
         run: dotnet restore
 
-      - name: Build ${{ env.PACKAGE_VERSION }}
+      - name: Build version ${{ env.PACKAGE_VERSION }}
         run: dotnet build -c Release /p:Version=${PACKAGE_VERSION}
 
-      - name: Test ${{ env.PACKAGE_VERSION }}
+      - name: Test version ${{ env.PACKAGE_VERSION }}
         run: dotnet test -c Release /p:Version=${PACKAGE_VERSION} --no-restore --verbosity normal
 
-      - name: Pack ${{ env.PACKAGE_VERSION }}
+      - name: Pack version ${{ env.PACKAGE_VERSION }}
         run: dotnet pack -c Release /p:Version=${PACKAGE_VERSION} --no-restore --output .
 
-      - name: Push ${{ env.PACKAGE_VERSION }}
+      - name: Push version ${{ env.PACKAGE_VERSION }}
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.pushEnabled }}
         run: dotnet nuget push OldBit.Beep.${PACKAGE_VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }}
