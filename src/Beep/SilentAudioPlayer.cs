@@ -3,7 +3,7 @@ using OldBit.Beep.Pcm;
 namespace OldBit.Beep;
 
 /// <summary>
-/// Represents an silent audio player that does not play any audio.
+/// Represents a silent audio player that does not play any audio.
 /// </summary>
 internal class SilentAudioPlayer : IAudioPlayer
 {

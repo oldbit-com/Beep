@@ -93,7 +93,7 @@ public class AudioPlayer : IDisposable
     /// Enqueues the audio data to be played.
     /// </summary>
     /// <param name="data">The audio data to enqueue.</param>
-    /// <param name="count">The number of bytes to play. If set to -1, it means all..</param>
+    /// <param name="count">The number of bytes to play. If set to -1, it means all.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     public async Task EnqueueAsync(byte[] data, int count = -1, CancellationToken cancellationToken = default)
     {
@@ -106,7 +106,7 @@ public class AudioPlayer : IDisposable
     /// Attempts to enqueue the audio data to be played.
     /// </summary>
     /// <param name="data">The audio data to enqueue.</param>
-    /// <param name="count">The number of bytes to play. If set to -1, it means all..</param>
+    /// <param name="count">The number of bytes to play. If set to -1, it means all.</param>
     /// <returns>
     /// true if the audio data was successfully enqueued; otherwise, false.
     /// </returns>
