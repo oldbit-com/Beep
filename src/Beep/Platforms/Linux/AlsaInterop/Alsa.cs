@@ -55,7 +55,6 @@ internal static partial class Alsa
     internal static partial int snd_pcm_hw_params_set_channels(IntPtr pcm, IntPtr @params, uint val);
 
     [LibraryImport(AlsaLibrary)]
-    //internal static unsafe partial int snd_pcm_hw_params_set_rate_near(IntPtr pcm, IntPtr @params, uint* val, int* dir);
     internal static partial int snd_pcm_hw_params_set_rate_near(IntPtr pcm, IntPtr @params, ref uint val, ref int dir);
 
     [LibraryImport(AlsaLibrary)]
