@@ -30,6 +30,11 @@ public sealed class PlayerOptions
     /// </summary>
     public bool ThrowOnUnsupportedPlatform { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether to use the silent audio player. This is useful for testing purposes.
+    /// </summary>
+    public bool UseSilentAudioPlayer { get; set; }
+
     internal void ThrowIfNotValid()
     {
         if (BufferSizeInBytes < 1)

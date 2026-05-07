@@ -40,7 +40,11 @@ public class AudioPlayer : IDisposable
 
         IAudioPlayer audioPlayer;
 
-        if (OperatingSystem.IsMacOS())
+        if (playerOptions.UseSilentAudioPlayer)
+        {
+            audioPlayer = new SilentAudioPlayer();
+        }
+        else if (OperatingSystem.IsMacOS())
         {
             audioPlayer = new AudioQueuePlayer(sampleRate, channelCount, playerOptions);
         }
